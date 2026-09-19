@@ -1,17 +1,29 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate  } from "react-router-dom";
 import FormInput from "../components/FormInput";
 import "./RegisterPage.css";
+import { AxiosError } from "axios";
+import { useAuth } from "../contexts/AuthContext";
+
+interface ApiErrorResponse {
+    success?: boolean;
+    message?: string;
+}
 
 function RegisterPage() {
+    const navigate = useNavigate();
+    const { register } = useAuth();
+
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         setError("");
@@ -40,6 +52,30 @@ function RegisterPage() {
             setError("Passwords do not match");
             return;
         }
+
+        try {
+            setIsSubmitting(true);
+            await register({
+                name: name.trim(),
+                email: email.trim(),
+                password,
+            });
+
+            // Registration successful
+            navigate("/app/dashboard");
+        } catch (error) {
+            const axiosError =
+                error as AxiosError<ApiErrorResponse>;
+
+            const message =
+                axiosError.response?.data?.message ??
+                "Unable to create account. Please try again.";
+
+            setError(message);
+        } finally {
+            setIsSubmitting(false);
+        }
+
 
         console.log({
             name,
@@ -93,11 +129,12 @@ function RegisterPage() {
                         <button
                             className="secondary-button"
                             type="button"
+                            disabled={isSubmitting}
                             onClick={() => setShowPassword(!showPassword)}
                         >
                             {showPassword ? "Hide Passwords" : "Show Passwords"}
                         </button>
-                        <button className="primary-button" type="submit">
+                        <button className="primary-button" type="submit" disabled={isSubmitting}>
                             Create Account
                         </button>
                     </div>
