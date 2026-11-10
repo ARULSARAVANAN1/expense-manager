@@ -4,6 +4,23 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Apply appearance before the first paint; keep the key in sync with ThemeProvider.
+      (() => {
+        let appearance = "system";
+        try {
+          const saved = localStorage.getItem("expense_manager_appearance");
+          if (saved === "light" || saved === "dark" || saved === "system") appearance = saved;
+        } catch (error) {
+          console.warn("Unable to read the appearance preference.", error);
+        }
+        const theme = appearance === "system"
+          ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+          : appearance;
+        document.documentElement.dataset.appearance = appearance;
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
     <title>expense-finance-manager</title>
   </head>
   <body>

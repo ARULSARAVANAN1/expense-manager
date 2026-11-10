@@ -5,6 +5,7 @@ import "./RegisterPage.css";
 import { AxiosError } from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import AuthBackground from "../components/AuthBackground";
+import ThemeSelector from "../components/ThemeSelector";
 
 interface ApiErrorResponse {
     success?: boolean;
@@ -88,6 +89,7 @@ function RegisterPage() {
 
     return (
         <div className="register-page">
+            <div className="auth-appearance"><ThemeSelector /></div>
             <AuthBackground />
             <section className="register-card">
                 <p className="register-eyebrow">Expense Finance Manager</p>

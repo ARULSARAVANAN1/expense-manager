@@ -1,26 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
 import Icon from "../components/Icon";
-import { useAuth } from "../contexts/AuthContext";
 import { deleteAccount, getAccounts, getIncomes, saveAccount } from "../services/finance-data.service";
 import { getExpenses } from "../services/expense.service";
+import type { Expense, ExpenseAccount, Income } from "../types/expense";
 
 function AccountsPage() {
-  const { user } = useAuth();
-  const userId = user?.id ?? "";
-  const [accounts, setAccounts] = useState(() => getAccounts(userId));
+  const [accounts, setAccounts] = useState<ExpenseAccount[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [name, setName] = useState("");
   const [editingId, setEditingId] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const expenses = getExpenses(userId);
-  const incomes = getIncomes(userId);
+  const [loading, setLoading] = useState(true);
 
-  function save(event: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    let active = true;
+    void Promise.all([getAccounts(), getExpenses(), getIncomes()])
+      .then(([nextAccounts, nextExpenses, nextIncomes]) => {
+        if (!active) return;
+        setAccounts(nextAccounts);
+        setExpenses(nextExpenses);
+        setIncomes(nextIncomes);
+      })
+      .catch((loadError: unknown) => {
+        if (active) setError(loadError instanceof Error ? loadError.message : "Unable to load accounts.");
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
-      saveAccount(userId, name, editingId || undefined);
-      setAccounts(getAccounts(userId));
+      await saveAccount(name, editingId || undefined);
+      setAccounts(await getAccounts());
       setName("");
       setEditingId("");
       setError("");
@@ -30,10 +45,10 @@ function AccountsPage() {
     }
   }
 
-  function remove(id: string) {
+  async function remove(id: string) {
     try {
-      deleteAccount(userId, id);
-      setAccounts(getAccounts(userId));
+      await deleteAccount(id);
+      setAccounts(await getAccounts());
       setNotice("Account deleted.");
       setError("");
     } catch (deleteError) {
@@ -46,6 +61,7 @@ function AccountsPage() {
       <PageHeader title="Accounts" subtitle="Manage the accounts and payment methods used for transactions." />
       {notice && <div className="toast-message" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss notification">×</button></div>}
       {error && <div className="inline-error" role="alert">{error}</div>}
+      {loading && <p role="status">Loading accounts…</p>}
       <div className="management-layout">
         <section className="content-card"><div className="card-heading"><div><h3>Accounts & payment methods</h3><p>Accounts linked to transactions are protected from deletion.</p></div></div>
           <div className="manage-list">{accounts.map((account) => {

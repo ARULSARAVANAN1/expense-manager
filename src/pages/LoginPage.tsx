@@ -5,6 +5,8 @@ import { GoogleLogin, GoogleOAuthProvider, type CredentialResponse } from "@reac
 import "./LoginPage.css";
 import { useAuth } from "../contexts/AuthContext";
 import AuthBackground from "../components/AuthBackground";
+import ThemeSelector from "../components/ThemeSelector";
+import { useTheme } from "../hooks/useTheme";
 
 interface ApiErrorResponse {
     success?: boolean;
@@ -12,6 +14,7 @@ interface ApiErrorResponse {
 }
 
 function LoginPage() {
+    const { resolvedTheme } = useTheme();
     const navigate = useNavigate();
     const { login, loginWithGoogle } = useAuth();
     const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
@@ -80,6 +83,7 @@ function LoginPage() {
 
     return (
         <div className="login-page">
+            <div className="auth-appearance"><ThemeSelector /></div>
             <AuthBackground />
             <section className="login-card">
                 <p className="login-eyebrow">Expense Finance Manager</p>
@@ -96,7 +100,7 @@ function LoginPage() {
                                 <legend className="sr-only">Sign in with Google</legend>
                                 <GoogleLogin onSuccess={handleGoogleSuccess}
                                     onError={() => setError("Google sign-in was not completed. Please try again or sign in with email.")}
-                                    theme="outline" size="large" shape="pill" text="signin_with" />
+                                    theme={resolvedTheme === "dark" ? "filled_black" : "outline"} size="large" shape="pill" text="signin_with" />
                             </fieldset>}
                     </GoogleOAuthProvider> : <>
                         <button className="google-signin-placeholder" type="button" disabled aria-describedby="google-setup-notice">Sign in with Google</button>

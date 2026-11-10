@@ -15,7 +15,10 @@ import {
     getCurrentUser,
     login as loginApi,
     loginWithGoogle as googleLoginApi,
+    logout as logoutApi,
     register as registerApi,
+    updateCurrentUser,
+    changePassword as changePasswordApi,
 } from "../services/auth.service";
 import { getToken, removeToken, setToken } from "../utils.ts/auth-storage";
 
@@ -27,7 +30,9 @@ interface AuthContextValue {
     login: (data: LoginRequest) => Promise<void>;
     loginWithGoogle: (credential: string) => Promise<void>;
     register: (data: RegisterRequest) => Promise<void>;
-    logout: () => void;
+    updateProfile: (updates: { name?: string; preferredCurrency?: string }) => Promise<void>;
+    changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<
@@ -62,9 +67,24 @@ export function AuthProvider({
         setUser(result.user);
     }
 
-    function logout() {
+    async function updateProfile(updates: { name?: string; preferredCurrency?: string }) {
+        const updatedUser = await updateCurrentUser(updates);
+        setUser(updatedUser);
+    }
+
+    async function changePassword(currentPassword: string, newPassword: string) {
+        await changePasswordApi(currentPassword, newPassword);
         removeToken();
         setUser(null);
+    }
+
+    async function logout() {
+        try {
+            await logoutApi();
+        } finally {
+            removeToken();
+            setUser(null);
+        }
     }
 
     useEffect(() => {
@@ -110,6 +130,8 @@ export function AuthProvider({
                 login,
                 loginWithGoogle,
                 register,
+                updateProfile,
+                changePassword,
                 logout,
             }}
         >

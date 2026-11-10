@@ -1,4 +1,4 @@
-import api from "./api";
+import api, { unwrapResponse } from "./api";
 
 import type {
     ApiResponse,
@@ -11,38 +11,55 @@ import type {
 export async function register(
     data: RegisterRequest
 ): Promise<AuthResponse> {
-    const response = await api.post<ApiResponse<AuthResponse>>(
-        "/auth/register",
-        data
+    return unwrapResponse(
+        api.post<ApiResponse<AuthResponse>>("/auth/register", data),
     );
-
-    return response.data.data;
 }
 
 export async function login(
     data: LoginRequest
 ): Promise<AuthResponse> {
-    const response = await api.post<ApiResponse<AuthResponse>>(
-        "/auth/login",
-        data
+    return unwrapResponse(
+        api.post<ApiResponse<AuthResponse>>("/auth/login", data),
     );
-
-    return response.data.data;
 }
 
 export async function getCurrentUser(): Promise<User> {
-    const response = await api.get<ApiResponse<User>>(
-        "/auth/me"
+    return unwrapResponse(
+        api.get<ApiResponse<User>>("/auth/me"),
     );
-
-    return response.data.data;
 }
 
 export async function loginWithGoogle(credential: string): Promise<AuthResponse> {
-    const response = await api.post<ApiResponse<AuthResponse>>("/auth/google", { credential });
-    const result = response.data.data;
-    if (!response.data.success || !result?.token || !result.user?.id || !result.user.name || !result.user.email) {
+    const result = await unwrapResponse(
+        api.post<ApiResponse<AuthResponse>>("/auth/google", { credential }),
+    );
+    if (!result?.token || !result.user?.id || !result.user.name || !result.user.email) {
         throw new Error("Google sign-in returned an invalid session.");
     }
     return result;
+}
+
+export async function logout(): Promise<void> {
+    await unwrapResponse(api.post<ApiResponse<{ id: string }>>("/auth/logout"));
+}
+
+export async function updateCurrentUser(
+    updates: { name?: string; preferredCurrency?: string },
+): Promise<User> {
+    return unwrapResponse(
+        api.patch<ApiResponse<User>>("/users/me", updates),
+    );
+}
+
+export async function changePassword(
+    currentPassword: string,
+    newPassword: string,
+): Promise<void> {
+    await unwrapResponse(
+        api.post<ApiResponse<{ reauthenticate?: boolean }>>(
+            "/users/me/change-password",
+            { currentPassword, newPassword },
+        ),
+    );
 }

@@ -1,5 +1,5 @@
 import DatePicker from "../components/DatePicker";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
@@ -10,13 +10,34 @@ import { getExpenses } from "../services/expense.service";
 import type { Expense } from "../types/expense";
 import { formatCompactCurrency, formatCurrency, formatDate, toDateKey } from "../utils.ts/finance";
 import { getCategories, getIncomes } from "../services/finance-data.service";
+import type { ExpenseCategory, Income } from "../types/expense";
 
 function ReportsPage() {
   const { user } = useAuth();
+  const userId = user?.id ?? "";
   const navigate = useNavigate();
-  const expenses = useMemo(() => getExpenses(user?.id ?? ""), [user?.id]);
-  const incomes = useMemo(() => getIncomes(user?.id ?? ""), [user?.id]);
-  const categories = useMemo(() => getCategories(user?.id ?? "", "expense"), [user?.id]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all([
+      getExpenses(),
+      getIncomes(),
+      getCategories("expense"),
+    ]).then(([nextExpenses, nextIncomes, nextCategories]) => {
+      if (!active) return;
+      setExpenses(nextExpenses);
+      setIncomes(nextIncomes);
+      setCategories(nextCategories);
+    }).catch((loadError: unknown) => {
+      if (active) setError(loadError instanceof Error ? loadError.message : "Unable to load report data.");
+    }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [userId]);
   const [period, setPeriod] = useState("3months");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
@@ -63,6 +84,8 @@ function ReportsPage() {
   return (
     <>
       <PageHeader title="Reports & Insights" subtitle="Understand where your money goes." action={<div className="header-actions"><select className="select-control period-select" aria-label="Select report date range" value={period} onChange={(event) => setPeriod(event.target.value)}><option value="7days">Last 7 days</option><option value="month">This month</option><option value="lastmonth">Last month</option><option value="3months">Last 3 months</option><option value="6months">Last 6 months</option><option value="year">This year</option><option value="custom">Custom range</option></select></div>} />
+      {error && <div className="inline-error" role="alert">{error}</div>}
+      {loading && <p role="status">Loading report data…</p>}
       {period === "custom" && <div className="custom-date-range"><label>From <DatePicker type="date" value={customFrom} onChange={(value) => setCustomFrom(value)} /></label><label>To <DatePicker type="date" value={customTo} onChange={(value) => setCustomTo(value)} /></label></div>}
       <section className="summary-grid">
         <SummaryCard label="Total expenses" value={formatCurrency(total)} detail="For selected period" icon="↘" tone="red" valueTone="expense" />
@@ -75,7 +98,7 @@ function ReportsPage() {
         <article className="content-card"><div className="card-heading"><div><h3>Monthly expense trend</h3><p>Choose a month to filter transactions</p></div></div><div className="trend-chart"><ExpenseTrendChart expenses={periodExpenses} onSelect={selectTrendMonth} /></div></article>
         <article className="content-card"><div className="card-heading"><div><h3>Category breakdown</h3><p>Click a category to filter report activity</p></div></div><CategoryDonutChart expenses={periodExpenses} categories={categories} onSelect={(id) => { setSelectedCategory(selectedCategory === id ? "" : id); setSelectedDay(""); }} /></article>
         <article className="content-card"><div className="card-heading"><div><h3>Top spending categories</h3><p>Highest spending categories</p></div></div><TopCategoriesChart expenses={periodExpenses} categories={categories} onSelect={(id) => setSelectedCategory(selectedCategory === id ? "" : id)} /></article>
-        <article className="content-card"><div className="card-heading"><div><h3>Daily spending pattern</h3><p>Daily totals across the selected period</p></div></div><div className="daily-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={dailyData} margin={{ top: 8, right: 8, left: 3, bottom: 0 }}><CartesianGrid stroke="#eef0f4" vertical={false} /><XAxis dataKey="label" axisLine={false} tickLine={false} tickMargin={8} minTickGap={22} interval="preserveStartEnd" tick={{ fill: "#68768b", fontSize: 11 }} /><YAxis width={64} axisLine={false} tickLine={false} tickMargin={7} tickFormatter={(value: number) => formatCompactCurrency(value)} tick={{ fill: "#68768b", fontSize: 11 }} /><Tooltip content={FinanceTooltip} cursor={{ fill: "var(--primary-soft)", opacity: 0.65 }} /><Bar dataKey="amount" name="Expenses" fill="var(--primary)" radius={[4, 4, 0, 0]} onClick={(data) => { const item = data as unknown as { date?: string; payload?: { date?: string } }; const day = item.date ?? item.payload?.date; if (day) setSelectedDay(selectedDay === day ? "" : day); }} /></BarChart></ResponsiveContainer></div></article>
+        <article className="content-card"><div className="card-heading"><div><h3>Daily spending pattern</h3><p>Daily totals across the selected period</p></div></div><div className="daily-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={dailyData} margin={{ top: 8, right: 8, left: 3, bottom: 0 }}><CartesianGrid stroke="var(--chart-grid)" vertical={false} /><XAxis dataKey="label" axisLine={false} tickLine={false} tickMargin={8} minTickGap={22} interval="preserveStartEnd" tick={{ fill: "var(--chart-axis)", fontSize: 12 }} /><YAxis width={64} axisLine={false} tickLine={false} tickMargin={7} tickFormatter={(value: number) => formatCompactCurrency(value)} tick={{ fill: "var(--chart-axis)", fontSize: 12 }} /><Tooltip content={FinanceTooltip} cursor={{ fill: "var(--primary-soft)", opacity: 0.65 }} /><Bar dataKey="amount" name="Expenses" fill="var(--primary)" radius={[4, 4, 0, 0]} onClick={(data) => { const item = data as unknown as { date?: string; payload?: { date?: string } }; const day = item.date ?? item.payload?.date; if (day) setSelectedDay(selectedDay === day ? "" : day); }} /></BarChart></ResponsiveContainer></div></article>
       </section>
       <section className="content-card recent-card">
         <div className="card-heading"><div><h3>Transactions</h3><p>{selectedDay ? formatDate(selectedDay) : selectedMonth || categoryLabel ? `Filtered by ${[selectedMonth, categoryLabel].filter(Boolean).join(" · ")}` : "Transactions contributing to this report"}</p></div>{(selectedCategory || selectedMonth || selectedDay) && <button className="reset-button" onClick={clearFilters}>Clear filters ×</button>}</div>

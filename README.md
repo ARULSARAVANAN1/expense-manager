@@ -40,17 +40,33 @@ server/
 
 ## UI
 
-The application uses a light green theme with white cards, mint surfaces, and
-dark green primary actions for readable contrast. Shared buttons include
-consistent rounded corners, spacing, hover/pressed feedback, visible keyboard
-focus, and disabled states. Destructive actions stay red; income/expense
-semantics and category-specific colors remain distinct.
+The application supports Light, Dark, and System appearance from the topbar
+account menu and the login/signup appearance selector. System appearance follows
+OS changes live. The preference persists across refreshes and synchronizes across
+tabs; a synchronous initialization script sets the root `data-theme` before the
+app renders to avoid a flash of the wrong theme.
+
+All UI colors, typography, spacing, radii, and shadows come from semantic CSS
+custom properties in `src/styles/variables.css`; shared typography and controls
+live in `src/styles/global.css`. Use these tokens rather than component-local
+color literals. `ThemeProvider` owns appearance state and `useTheme()` exposes it
+without per-page theme state. Inter uses system fallbacks, and financial amounts
+use tabular numerals. Standard category colors are shared by charts and category
+icons across Dashboard and Reports; custom categories retain their chosen color.
+Shared buttons include hover/pressed feedback, visible keyboard focus, and
+disabled states. Destructive actions stay red; income/expense semantics remain
+distinct in both themes. Dark surfaces use thin borders and minimal shadows.
 Login and signup share decorative expense illustrations with gentle floating
 motion and pointer parallax. Decorations never intercept form interaction,
 are hidden from assistive technology, simplify on mobile, and respect reduced
 motion preferences. Illustrations are decorative, not actual financial data.
 
 ## Google sign-in setup
+
+The frontend uses the documented API at `http://localhost:3000/api` by default.
+Set `VITE_API_BASE_URL` when the backend runs at a different origin or base path,
+then restart Vite. Finance records are loaded from and saved to the API; only the
+application session token and appearance preference are kept in local storage.
 
 The login page integrates Google Identity Services via `@react-oauth/google`.
 Email/password login remains available. Without configuration, a disabled
@@ -63,11 +79,11 @@ Google sign-in placeholder explains that setup is required.
 2. Set `VITE_GOOGLE_CLIENT_ID=your-public-client-id.apps.googleusercontent.com`
    in your local Vite environment and restart the dev server. This public
    client ID is safe for the frontend; never put client secrets in Vite variables.
-3. Implement `POST /auth/google` on the existing API base URL. The frontend
-   sends `{ "credential": "<Google ID token>" }`. The proposed success response
+3. The API exposes `POST /auth/google` at the configured API base URL. The
+   frontend sends `{ "credential": "<Google ID token>" }`. Its success response
    matches email login:
    `{ "success": true, "data": { "token": "<app JWT>", "user": { "id": "...", "name": "...", "email": "..." } } }`.
-   Return a non-2xx response with `{ "message": "..." }` for failures.
+   API errors are shown to the user.
 4. On the backend, use Google's official authentication library to verify the
    token signature, expiry, issuer, and audience against your Google client ID.
    Require a verified email, identify Google accounts by their stable `sub`,
@@ -79,10 +95,10 @@ Google sign-in placeholder explains that setup is required.
 
 The frontend never treats a decoded Google token as an app session; only the
 backend-issued app token is stored through the existing authentication flow.
-Backend implementation and real Google credentials are not included here.
+Real Google credentials are not included here.
 
 The finance workspace uses shared inline SVG icons with semantic colors: green
-for income, red for destructive actions, blue for primary actions, and distinct
+for income, red for destructive actions, indigo for primary actions, and distinct
 category colors. Category management includes an icon picker and live preview;
 existing custom category icons remain supported. Hover and focus feedback
 respects the device's reduced-motion preference. All currency values use INR.
@@ -101,26 +117,16 @@ calendar, including filters, transaction forms, budgets, and the dashboard.
 Expense analysis supports a daily view for a chosen month and a monthly view
 for a chosen year; selecting a point or bar filters the transaction list.
 
-Recurring expenses are user-scoped local schedules, not bank payments or a
-server scheduler. Opening the signed-in app creates due monthly expenses and
-catches up missed months through today. Billing dates on the 29th–31st clamp
-to the last valid day of shorter months. Optional end months are inclusive.
-Generated transactions use stable per-schedule/month IDs and a persisted
-completion cursor to avoid duplicates and preserve edits/deletions. Schedule
-changes affect future entries only; deleting a schedule keeps existing expenses.
-Accounts/categories referenced by schedules cannot be deleted.
+The API currently does not expose recurring-expense or shared-expense routes.
+Those pages explain the limitation and do not save finance data in browser
+storage.
 
 The profile page is accessible from both account identities and navigation.
 It shows the current account, without an account-switching action.
-Email is non-editable, the display name can be drafted, and password fields appear
-only after selecting Change password. Profile saving
-and password changes are explicitly disabled until their backend routes,
-request/response contracts, validation rules, and session behavior are supplied.
-Passwords are never simulated or persisted in local storage.
-The preferred-currency selector is intended for backend userinfo persistence
-and remains unsavable until the update endpoint and currency field are provided.
-It is a preference only: existing amounts continue to display in INR without
-conversion. No local-storage substitute is used for this preference.
+Email is non-editable; display name and preferred currency are saved through the
+profile API, and password changes use the separate password endpoint. Passwords
+are never persisted in browser storage. Preferred currency is a preference only:
+existing amounts continue to display in INR without conversion.
 User information appears first, followed by compact name and currency cards.
 One shared Save profile action is reserved for the single user-update endpoint;
 password changes use a separate action and endpoint.

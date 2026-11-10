@@ -1,5 +1,5 @@
 import DatePicker from "../components/DatePicker";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
@@ -10,22 +10,48 @@ import { CategoryDonutChart, DailyExpenseChart } from "../components/FinanceChar
 import { useAuth } from "../contexts/AuthContext";
 import { getExpenses } from "../services/expense.service";
 import { getBudgets, getCategories, getIncomes } from "../services/finance-data.service";
-import { getRecurringExpenses } from "../services/recurring-expense.service";
 import { formatCurrency, formatDate, toDateKey } from "../utils.ts/finance";
+import type { Budget, Expense, ExpenseCategory, Income } from "../types/expense";
 import "./DashboardPage.css";
+import { getCategoryStyle } from "../utils.ts/category-style";
 
 function DashboardPage() {
   const { user } = useAuth();
+  const userId = user?.id ?? "";
   const [month, setMonth] = useState(() => toDateKey(new Date()).slice(0, 7));
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
-  const expenses = useMemo(() => getExpenses(user?.id ?? ""), [user?.id]);
-  const incomes = useMemo(() => getIncomes(user?.id ?? ""), [user?.id]);
-  const categories = useMemo(() => getCategories(user?.id ?? "", "expense"), [user?.id]);
-  const budgets = useMemo(() => getBudgets(user?.id ?? ""), [user?.id]);
-  const schedules = useMemo(() => getRecurringExpenses(user?.id ?? ""), [user?.id]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [reload, setReload] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all([
+      getExpenses(),
+      getIncomes(),
+      getCategories("expense"),
+      getBudgets(),
+    ]).then(([nextExpenses, nextIncomes, nextCategories, nextBudgets]) => {
+      if (!active) return;
+      setExpenses(nextExpenses);
+      setIncomes(nextIncomes);
+      setCategories(nextCategories);
+      setBudgets(nextBudgets);
+      setLoadError("");
+    }).catch((error: unknown) => {
+      if (active) setLoadError(error instanceof Error ? error.message : "Unable to load dashboard data.");
+    }).finally(() => {
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
+  }, [userId, reload]);
   const [year, monthNumber] = month.split("-").map(Number);
   const monthStart = new Date(year, monthNumber - 1, 1);
   const monthEnd = new Date(year, monthNumber, 0);
@@ -47,7 +73,7 @@ function DashboardPage() {
   const topCategory = categoryTotals.find((category) => category.total > 0);
   const matching = monthlyExpenses.filter((expense) =>
     (!categoryId || expense.categoryId === categoryId)
-    && (!search.trim() || `${expense.description} ${expense.notes ?? ""} ${expense.accountName}`.toLowerCase().includes(search.trim().toLowerCase())),
+    && (!search.trim() || `${expense.description} ${expense.notes ?? ""} ${expense.accountName ?? ""}`.toLowerCase().includes(search.trim().toLowerCase())),
   ).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
   const visible = showAll ? matching : matching.slice(0, 5);
   const dateQuery = `from=${toDateKey(monthStart)}&to=${toDateKey(monthEnd)}`;
@@ -87,6 +113,8 @@ function DashboardPage() {
       </section>
 
       <QuickExpense />
+      {loadError && <div className="inline-error" role="alert">{loadError}<button className="button button-secondary" onClick={() => { setLoading(true); setReload((value) => value + 1); }}>Retry</button></div>}
+      {loading && <p role="status">Loading your finance data…</p>}
       <section className="content-card dashboard-activity" aria-labelledby="dashboard-activity-title">
         <div className="card-heading">
           <div><h3 id="dashboard-activity-title">Recent transactions <span className="activity-count">{monthlyExpenses.length}</span></h3><p>Explore your expenses for {monthLabel}. Select a transaction for a quick preview.</p></div>
@@ -106,14 +134,14 @@ function DashboardPage() {
             return (
               <article className={`activity-item${expanded ? " is-expanded" : ""}`} key={expense.id}>
                 <button className="activity-trigger" type="button" aria-expanded={expanded} aria-controls={`preview-${expense.id}`} onClick={() => setExpandedId(expanded ? null : expense.id)}>
-                  <span className="activity-category-icon" style={{ color: category?.color, backgroundColor: `${category?.color ?? "#64748b"}1c` }}><Icon name={category?.icon ?? "categories"} size={21} /></span>
-                  <span className="activity-description"><strong>{expense.description}</strong><span>{expense.categoryName} <span aria-hidden="true">·</span> {expense.accountName}</span></span>
+                  <span className="activity-category-icon" style={getCategoryStyle(category)}><Icon name={category?.icon ?? "categories"} size={21} /></span>
+                  <span className="activity-description"><strong>{expense.description}</strong><span>{expense.categoryName} <span aria-hidden="true">·</span> {expense.accountName ?? "No account"}</span></span>
                   <span className="activity-date">{formatDate(expense.date)}</span>
                   <span className="activity-amount" data-finance-tone="expense">{formatCurrency(expense.amount)}<small data-finance-tone="expense">Expense</small></span>
                   <span className="activity-chevron"><Icon name="next" size={16} /></span>
                 </button>
                 {expanded && <div className="activity-preview" id={`preview-${expense.id}`}>
-                  <dl><div><dt>Transaction date</dt><dd>{formatDate(expense.date)}</dd></div><div><dt>Payment method</dt><dd>{expense.accountName}</dd></div><div><dt>Notes</dt><dd>{expense.notes || "No notes added."}</dd></div></dl>
+                  <dl><div><dt>Transaction date</dt><dd>{formatDate(expense.date)}</dd></div><div><dt>Payment method</dt><dd>{expense.accountName ?? "No account"}</dd></div><div><dt>Notes</dt><dd>{expense.notes || "No notes added."}</dd></div></dl>
                   <div className="activity-preview-actions"><Link className="button button-secondary" to={`/app/expenses/${expense.id}`}>View details<Icon name="next" size={14} /></Link><Link className="button button-secondary" to={`/app/expenses/${expense.id}/edit`}><Icon name="edit" size={14} />Edit expense</Link></div>
                 </div>}
               </article>
@@ -124,7 +152,7 @@ function DashboardPage() {
         {matching.length > 5 && <button className="activity-show-more" onClick={() => setShowAll(!showAll)}>{showAll ? "Show fewer transactions" : `Show all ${matching.length} matching transactions`}<Icon name={showAll ? "back" : "next"} size={15} /></button>}
       </section>
 
-      <MonthlyInsights key={month} month={month} expenses={expenses} incomes={incomes} categories={categories} budgets={budgets} schedules={schedules} />
+      <MonthlyInsights key={month} month={month} expenses={expenses} incomes={incomes} categories={categories} budgets={budgets} />
       <section className="dashboard-month-charts" aria-label={`${monthLabel} spending charts`}>
         <article className="content-card">
           <div className="card-heading"><div><h3>Daily spending</h3><p>Day-by-day activity in {monthLabel}. Select a point to view expenses.</p></div><span className="chart-heading-icon blue"><Icon name="reports" /></span></div>

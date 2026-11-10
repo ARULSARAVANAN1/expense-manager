@@ -1,0 +1,141 @@
+:root {
+  --font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-size-page: clamp(26px, 2.5vw, 30px);
+  --font-size-section: 20px;
+  --font-size-card: 16px;
+  --font-size-financial: clamp(26px, 2.5vw, 32px);
+  --font-size-body: 14px;
+  --font-size-secondary: 13px;
+  --font-size-caption: 12px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 600;
+  --font-weight-bold: 700;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-input: 8px;
+  --radius-button: 8px;
+  --radius-card: 12px;
+  --radius-dialog: 16px;
+  --radius-badge: 9999px;
+  --sidebar-width: 252px;
+  --auth-glow-opacity: .65;
+
+  --category-food: #8B5CF6;
+  --category-groceries: #10B981;
+  --category-transport: #F59E0B;
+  --category-shopping: #EC4899;
+  --category-bills: #3B82F6;
+  --category-health: #14B8A6;
+  --category-entertainment: #F97316;
+  --category-travel: #6366F1;
+  --category-education: #A855F7;
+  --category-other: #64748B;
+  --category-salary: var(--category-groceries);
+  --category-freelance: var(--category-bills);
+  --category-investment: var(--category-food);
+  --category-gift-income: var(--category-shopping);
+  --category-other-income: var(--category-health);
+
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --primary-light: #EEF2FF;
+  --secondary: #0F766E;
+  --success: #059669;
+  --danger: #DC5252;
+  --warning: #B45309;
+  --background: #F5F7FC;
+  --surface: #FFFFFF;
+  --surface-muted: #F8FAFC;
+  --text-primary: #172033;
+  --text-secondary: #64748B;
+  --border: #E5E7EB;
+  --on-primary: #FFFFFF;
+  --on-danger: #172033;
+  --danger-hover: #C33E3E;
+  --on-danger-hover: #FFFFFF;
+  --danger-text: #B42332;
+  --success-text: #047857;
+  --purple: #7C3AED;
+  --shadow-card: 0 2px 8px #17203306;
+  --shadow-raised: 0 8px 24px #1720330D;
+  --shadow-dialog: 0 16px 48px #1720331F;
+  --overlay: #0B122099;
+  --heat-low: #ECFDF5;
+  --heat-medium: #A7F3D0;
+  --heat-high: #047857;
+  --heat-text: #064E3B;
+  --heat-high-text: #FFFFFF;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --primary: #818CF8;
+  --primary-hover: #A5B4FC;
+  --primary-light: #252A50;
+  --secondary: #2DD4BF;
+  --success: #34D399;
+  --danger: #F87171;
+  --warning: #FBBF24;
+  --background: #0B1220;
+  --surface: #111C2E;
+  --surface-muted: #172337;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --border: #29364B;
+  --on-primary: #0B1220;
+  --on-danger: #0B1220;
+  --danger-hover: #FCA5A5;
+  --on-danger-hover: #0B1220;
+  --danger-text: #F87171;
+  --success-text: #34D399;
+  --purple: #C4B5FD;
+  --shadow-card: none;
+  --shadow-raised: 0 4px 12px #00000014;
+  --shadow-dialog: 0 12px 32px #00000033;
+  --overlay: #00000099;
+  --heat-low: #13382E;
+  --heat-medium: #1B6249;
+  --heat-high: #34D399;
+  --heat-text: #D1FAE5;
+  --heat-high-text: #0B1220;
+  --auth-glow-opacity: .12;
+  color-scheme: dark;
+}
+
+:root {
+  --primary-soft: var(--primary-light);
+  --primary-border: color-mix(in srgb, var(--primary) 25%, var(--border));
+  --primary-shadow: color-mix(in srgb, var(--primary) 12%, transparent);
+  --focus-ring: color-mix(in srgb, var(--primary) 65%, transparent);
+  --card: var(--surface);
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --success-soft: color-mix(in srgb, var(--success) 10%, var(--surface));
+  --success-border: color-mix(in srgb, var(--success) 28%, var(--border));
+  --danger-soft: color-mix(in srgb, var(--danger) 10%, var(--surface));
+  --danger-border: color-mix(in srgb, var(--danger) 28%, var(--border));
+  --warning-soft: color-mix(in srgb, var(--warning) 10%, var(--surface));
+  --warning-border: color-mix(in srgb, var(--warning) 28%, var(--border));
+  --secondary-soft: color-mix(in srgb, var(--secondary) 10%, var(--surface));
+  --purple-soft: color-mix(in srgb, var(--purple) 10%, var(--surface));
+  --purple-border: color-mix(in srgb, var(--purple) 28%, var(--border));
+  --finance-income: var(--success-text);
+  --finance-expense: var(--danger-text);
+  --finance-warning: var(--warning);
+  --chart-grid: var(--border);
+  --chart-axis: var(--text-secondary);
+  --chart-cursor: var(--primary-light);
+  --category-default: var(--category-other);
+  --auth-grid: color-mix(in srgb, var(--primary) 16%, transparent);
+  --auth-decoration: color-mix(in srgb, var(--surface) 85%, transparent);
+  --mask-opaque: #000000;
+}
+
+:root[data-theme="dark"] {
+  --primary-shadow: transparent;
+}

@@ -34,11 +34,11 @@ export default function ExpenseAnalysis({ expenses, onSelect }: { expenses: Expe
     {selected.length ? <div className="expense-analysis-chart">
       {mode === "month" ? <DailyExpenseChart expenses={selected} month={month} onSelect={(date) => onSelect(date, date)} /> :
         <ResponsiveContainer width="100%" height="100%"><BarChart data={months} margin={{ top: 16, right: 12, left: 3, bottom: 8 }}>
-          <CartesianGrid vertical={false} stroke="#eef0f4" strokeDasharray="4 4" />
-          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
-          <YAxis width={64} axisLine={false} tickLine={false} tickFormatter={formatCompactCurrency} tick={{ fontSize: 11, fill: "#64748b" }} />
-          <Tooltip content={FinanceTooltip} cursor={{ fill: "#fff1f2" }} />
-          <Bar dataKey="amount" name="Expenses" fill="#dc5252" radius={[6, 6, 0, 0]} maxBarSize={38} cursor="pointer" onClick={(_, index) => {
+          <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="4 4" />
+          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "var(--chart-axis)" }} />
+          <YAxis width={64} axisLine={false} tickLine={false} tickFormatter={formatCompactCurrency} tick={{ fontSize: 12, fill: "var(--chart-axis)" }} />
+          <Tooltip content={FinanceTooltip} cursor={{ fill: "var(--danger-soft)" }} />
+          <Bar dataKey="amount" name="Expenses" fill="var(--danger)" radius={[6, 6, 0, 0]} maxBarSize={38} cursor="pointer" onClick={(_, index) => {
             const item = months[index];
             if (item) onSelect(`${item.key}-01`, toDateKey(new Date(Number(year), index + 1, 0)));
           }} />

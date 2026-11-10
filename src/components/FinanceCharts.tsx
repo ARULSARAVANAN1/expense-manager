@@ -18,6 +18,7 @@ import {
 import type { Expense, ExpenseCategory } from "../types/expense";
 import { expenseCategories } from "../types/expense";
 import { formatCompactCurrency, formatCurrency, formatDate } from "../utils.ts/finance";
+import { getCategoryColor, getCategoryStyle } from "../utils.ts/category-style";
 import Icon from "./Icon";
 
 interface ChartProps {
@@ -80,9 +81,9 @@ export function ExpenseTrendChart({ expenses, onSelect }: ChartProps) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={months} margin={{ top: 8, right: 8, left: 3, bottom: 0 }}>
-        <CartesianGrid stroke="#eef0f4" vertical={false} />
-        <XAxis dataKey="name" axisLine={false} tickLine={false} tickMargin={8} tick={{ fill: "#68768b", fontSize: 12 }} />
-        <YAxis width={64} axisLine={false} tickLine={false} tickMargin={7} tick={{ fill: "#68768b", fontSize: 11 }} tickFormatter={(value: number) => formatCompactCurrency(value)} />
+        <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
+        <XAxis dataKey="name" axisLine={false} tickLine={false} tickMargin={8} tick={{ fill: "var(--chart-axis)", fontSize: 12 }} />
+        <YAxis width={64} axisLine={false} tickLine={false} tickMargin={7} tick={{ fill: "var(--chart-axis)", fontSize: 12 }} tickFormatter={(value: number) => formatCompactCurrency(value)} />
         <Tooltip content={FinanceTooltip} cursor={{ fill: "var(--primary-soft)", opacity: 0.65 }} />
         <Bar dataKey="amount" name="Expenses" fill="var(--primary)" radius={[6, 6, 0, 0]} maxBarSize={38} cursor={onSelect ? "pointer" : "default"} onClick={(data) => {
           const item = data as unknown as { key?: string; payload?: { key?: string } };
@@ -122,13 +123,13 @@ export function DailyExpenseChart({ expenses, month, onSelect }: { expenses: Exp
             <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.02} />
           </linearGradient>
         </defs>
-        <CartesianGrid stroke="#eef0f4" strokeDasharray="4 4" vertical={false} />
-        <XAxis dataKey="day" axisLine={false} tickLine={false} minTickGap={12} tickMargin={8} tick={{ fill: "#68768b", fontSize: 12 }} />
-        <YAxis width={64} axisLine={false} tickLine={false} tickMargin={7} tickFormatter={formatCompactCurrency} tick={{ fill: "#68768b", fontSize: 11 }} />
+        <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="4 4" vertical={false} />
+        <XAxis dataKey="day" axisLine={false} tickLine={false} minTickGap={12} tickMargin={8} tick={{ fill: "var(--chart-axis)", fontSize: 12 }} />
+        <YAxis width={64} axisLine={false} tickLine={false} tickMargin={7} tickFormatter={formatCompactCurrency} tick={{ fill: "var(--chart-axis)", fontSize: 12 }} />
         <Tooltip content={FinanceTooltip} cursor={{ stroke: "var(--primary-border)", strokeDasharray: "4 4" }} />
         <Area type="monotone" dataKey="amount" name="Expenses" stroke="var(--primary)" strokeWidth={3}
           fill={`url(#${gradientId})`} dot={false}
-          activeDot={{ r: 6, fill: "var(--primary)", stroke: "#fff", strokeWidth: 3 }} cursor="pointer" />
+          activeDot={{ r: 6, fill: "var(--primary)", stroke: "var(--surface)", strokeWidth: 3 }} cursor="pointer" />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -157,7 +158,7 @@ export function CategoryDonutChart({ expenses, categories = expenseCategories, o
               onMouseEnter={(_, index) => setActiveId(amounts[index]?.id ?? null)}
               onMouseLeave={() => setActiveId(null)}
               onClick={(_, index) => { const category = amounts[index]; if (category) onSelect?.(category.id); }}>
-              {amounts.map((category) => <Cell key={category.id} fill={category.color} opacity={activeCategory && activeCategory.id !== category.id ? 0.3 : 1} cursor={onSelect ? "pointer" : "default"} />)}
+              {amounts.map((category) => <Cell key={category.id} fill={getCategoryColor(category)} opacity={activeCategory && activeCategory.id !== category.id ? 0.3 : 1} cursor={onSelect ? "pointer" : "default"} />)}
             </Pie>
             <Tooltip content={FinanceTooltip} />
           </PieChart>
@@ -176,10 +177,10 @@ export function CategoryDonutChart({ expenses, categories = expenseCategories, o
             onFocus={() => setActiveId(category.id)} onBlur={() => setActiveId(null)}
             aria-label={`${category.name}: ${formatCurrency(category.amount)}, ${(category.amount / total * 100).toFixed(1)}% of spending${onSelect ? ". View transactions" : ""}`}
             onClick={() => onSelect?.(category.id)}>
-            <span className="legend-category-icon" style={{ color: category.color, backgroundColor: `${category.color}1c` }}><Icon name={category.icon} size={19} /></span>
+            <span className="legend-category-icon" style={getCategoryStyle(category)}><Icon name={category.icon} size={19} /></span>
             <span className="category-row-content">
               <span className="category-row-heading"><span className="legend-name">{category.name}</span><strong>{formatCurrency(category.amount)}</strong></span>
-              <span className="category-share-track"><span style={{ width: `${category.amount / total * 100}%`, backgroundColor: category.color }} /></span>
+              <span className="category-share-track"><span style={{ width: `${category.amount / total * 100}%`, backgroundColor: getCategoryColor(category) }} /></span>
               <span className="category-row-meta"><span>{category.count} transaction{category.count === 1 ? "" : "s"}</span><small>{(category.amount / total * 100).toFixed(1)}%</small></span>
             </span>
             {onSelect && <Icon name="next" size={16} />}
@@ -201,8 +202,8 @@ export function TopCategoriesChart({ expenses, categories = expenseCategories, o
     <div className="top-categories">
       {data.length ? data.map((category) => (
         <button className="top-category-row" key={category.id} onClick={() => onSelect?.(category.id)}>
-          <span className="top-category-name"><Icon name={category.icon} size={16} style={{ color: category.color }} />{category.name}</span>
-          <span className="top-category-track"><i style={{ width: `${Math.max(4, category.amount / data[0].amount * 100)}%`, background: category.color }} /></span>
+          <span className="top-category-name"><Icon name={category.icon} size={16} style={{ color: getCategoryColor(category) }} />{category.name}</span>
+          <span className="top-category-track"><i style={{ width: `${Math.max(4, category.amount / data[0].amount * 100)}%`, background: getCategoryColor(category) }} /></span>
           <strong data-finance-tone="expense">{formatCurrency(category.amount)}</strong>
           <small>{total ? Math.round(category.amount / total * 100) : 0}%</small>
         </button>

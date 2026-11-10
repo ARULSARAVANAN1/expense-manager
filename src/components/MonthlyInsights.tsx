@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Budget, Expense, ExpenseCategory, Income } from "../types/expense";
-import type { RecurringExpense } from "../services/recurring-expense.service";
 import { monthlyInsights, monthDays } from "../utils.ts/insights";
 import { formatCurrency, formatDate, toDateKey } from "../utils.ts/finance";
 import Icon from "./Icon";
@@ -13,12 +12,11 @@ interface Props {
   incomes: Income[];
   categories: ExpenseCategory[];
   budgets: Budget[];
-  schedules: RecurringExpense[];
 }
 
-export default function MonthlyInsights({ month, expenses, incomes, categories, budgets, schedules }: Props) {
+export default function MonthlyInsights({ month, expenses, incomes, categories, budgets }: Props) {
   const [reductions, setReductions] = useState<Record<string, number>>({});
-  const insight = monthlyInsights(month, expenses, incomes, budgets, schedules, categories);
+  const insight = monthlyInsights(month, expenses, incomes, budgets, categories);
   const [year, number] = month.split("-").map(Number);
   const firstDay = new Date(year, number - 1, 1).getDay();
   const totals = new Map<string, number>();
@@ -34,7 +32,7 @@ export default function MonthlyInsights({ month, expenses, incomes, categories, 
         <strong className="insight-main-value" data-finance-tone={insight.balance < 0 ? "negative" : "positive"}>{formatCurrency(Math.max(0, insight.balance))}</strong>
         {insight.balance < 0 && <p data-finance-tone="negative">Planning shortfall: {formatCurrency(-insight.balance)}</p>}
         <dl className="insight-breakdown"><div><dt>Recorded income</dt><dd data-finance-tone="income">{formatCurrency(insight.income)}</dd></div><div><dt>Recorded expenses</dt><dd data-finance-tone="expense">{formatCurrency(insight.total)}</dd></div><div><dt>Reserved for budgets & commitments</dt><dd>{formatCurrency(insight.reserve)}</dd></div></dl>
-        <p className="field-hint">Income minus expenses minus reserves. Each category reserves the larger of its unused budget or unrecorded recurring commitments, avoiding double counting. Includes all dated records in this month; excludes bank balances, expected income, and unsettled splits.</p>
+        <p className="field-hint">Income minus expenses minus unused budget reserves. Includes all dated records in this month; excludes bank balances, expected income, recurring expenses, and unsettled splits.</p>
         {insight.remainingDays > 0 && <p><strong>{formatCurrency(Math.max(0, insight.balance) / insight.remainingDays)}</strong> per {current ? "remaining" : "calendar"} day ({insight.remainingDays} days{current ? ", including today" : ""}).</p>}
         {insight.allocations.some((item) => item.budget > 0) && <details className="insight-details"><summary>Category room after recurring commitments</summary>{insight.allocations.filter((item) => item.budget > 0).map((item) => <p key={item.id}>{item.name}<strong>{formatCurrency(item.available)}</strong></p>)}</details>}
         {!insight.income && <p className="field-hint">No income recorded for this month. Add income for a meaningful estimate.</p>}

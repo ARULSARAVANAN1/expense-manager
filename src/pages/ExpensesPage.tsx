@@ -1,5 +1,5 @@
 import DatePicker from "../components/DatePicker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import Icon from "../components/Icon";
@@ -8,8 +8,9 @@ import ExpenseAnalysis from "../components/ExpenseAnalysis";
 import { useAuth } from "../contexts/AuthContext";
 import { deleteExpense, getExpenses } from "../services/expense.service";
 import { getAccounts, getCategories } from "../services/finance-data.service";
-import type { Expense } from "../types/expense";
+import type { Expense, ExpenseAccount, ExpenseCategory } from "../types/expense";
 import { formatCurrency, formatDate } from "../utils.ts/finance";
+import { getCategoryStyle } from "../utils.ts/category-style";
 
 const PAGE_SIZE = 8;
 
@@ -17,9 +18,11 @@ function ExpensesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [expenses, setExpenses] = useState(() => getExpenses(user?.id ?? ""));
-  const categories = getCategories(user?.id ?? "", "expense");
-  const accounts = getAccounts(user?.id ?? "");
+  const userId = user?.id ?? "";
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  const [accounts, setAccounts] = useState<ExpenseAccount[]>([]);
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState(searchParams.get("category") ?? "");
@@ -31,6 +34,23 @@ function ExpensesPage() {
   const [pendingDelete, setPendingDelete] = useState<Expense | null>(null);
   const [toast, setToast] = useState(typeof location.state?.message === "string" ? location.state.message : "");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all([
+      getExpenses(),
+      getCategories("expense"),
+      getAccounts(),
+    ]).then(([nextExpenses, nextCategories, nextAccounts]) => {
+      if (!active) return;
+      setExpenses(nextExpenses);
+      setCategories(nextCategories);
+      setAccounts(nextAccounts);
+    }).catch((loadError: unknown) => {
+      if (active) setError(loadError instanceof Error ? loadError.message : "Unable to load expenses.");
+    }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [userId]);
 
   const contextualExpenses = expenses.filter((expense) => {
     const query = search.trim().toLowerCase();
@@ -52,12 +72,12 @@ function ExpensesPage() {
     setSearch(""); setCategory(""); setAccount(""); setFrom(""); setTo(""); setSort("newest"); setPage(1);
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!pendingDelete || !user) return;
     try {
-      deleteExpense(user.id, pendingDelete.id);
+      await deleteExpense(pendingDelete.id);
       setPendingDelete(null);
-      setExpenses(getExpenses(user.id));
+      setExpenses(await getExpenses());
       setToast("Expense deleted successfully.");
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Unable to delete expense.");
@@ -70,6 +90,7 @@ function ExpensesPage() {
       <PageHeader title="Expenses" subtitle="Track and manage your spending." action={<div className="header-actions"><Link className="button button-secondary" to="/app/recurring"><Icon name="clock" />Recurring</Link><Link className="button button-primary" to="/app/expenses/new"><Icon name="plus" />Add expense</Link></div>} />
       {toast && <div className="toast-message" role="status">{toast}<button onClick={() => setToast("")} aria-label="Dismiss notification">×</button></div>}
       {error && <div className="inline-error" role="alert">{error}</div>}
+      {loading && <p role="status">Loading expenses…</p>}
       <section className="summary-grid summary-grid-three">
         <SummaryCard label="Total expenses" value={formatCurrency(total)} detail="Across filtered transactions" icon="↘" tone="red" valueTone="expense" />
         <SummaryCard label="Transactions" value={String(filtered.length)} detail="Matching transactions" icon="⇄" tone="purple" />
@@ -91,8 +112,8 @@ function ExpensesPage() {
               const info = categories.find((item) => item.id === expense.categoryId);
               return <tr key={expense.id} className="clickable-row" onClick={() => navigate(`/app/expenses/${expense.id}`)}>
                 <td data-label="Date">{formatDate(expense.date)}</td><td data-label="Description"><span className="table-description">{expense.description}</span>{expense.notes && <small className="table-note">{expense.notes}</small>}</td>
-                <td data-label="Category"><span className="category-chip"><span className="category-chip-icon" style={{ backgroundColor: `${info?.color ?? "#64748b"}1c`, color: info?.color }}><Icon name={info?.icon ?? "categories"} size={16} /></span>{expense.categoryName}</span></td>
-                <td data-label="Account">{expense.accountName}</td><td data-label="Amount" className="align-right amount-cell">{formatCurrency(expense.amount)}</td>
+                <td data-label="Category"><span className="category-chip"><span className="category-chip-icon" style={getCategoryStyle(info)}><Icon name={info?.icon ?? "categories"} size={16} /></span>{expense.categoryName}</span></td>
+                <td data-label="Account">{expense.accountName ?? "No account"}</td><td data-label="Amount" className="align-right amount-cell">{formatCurrency(expense.amount)}</td>
                 <td><div className="row-actions"><button className="row-action" type="button" title="Edit expense" onClick={(event) => { event.stopPropagation(); navigate(`/app/expenses/${expense.id}/edit`); }} aria-label={`Edit ${expense.description}`}><Icon name="edit" size={15} /></button><button className="row-action delete-row-action" type="button" title="Delete expense" onClick={(event) => { event.stopPropagation(); setPendingDelete(expense); }} aria-label={`Delete ${expense.description}`}><Icon name="delete" size={15} /></button></div></td>
               </tr>;
             })}

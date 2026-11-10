@@ -1,19 +1,17 @@
 import DatePicker from "../components/DatePicker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
 import Icon from "../components/Icon";
 import SummaryCard from "../components/SummaryCard";
-import { useAuth } from "../contexts/AuthContext";
 import { deleteBudget, getBudgets, getCategories, saveBudget } from "../services/finance-data.service";
 import { getExpenses } from "../services/expense.service";
 import { formatCurrency, toDateKey } from "../utils.ts/finance";
+import type { Budget, Expense, ExpenseCategory } from "../types/expense";
 
 function BudgetsPage() {
-  const { user } = useAuth();
-  const userId = user?.id ?? "";
-  const [budgets, setBudgets] = useState(() => getBudgets(userId));
-  const categories = getCategories(userId, "expense");
-  const expenses = getExpenses(userId);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const currentMonth = toDateKey(new Date()).slice(0, 7);
   const [categoryId, setCategoryId] = useState("");
   const [amount, setAmount] = useState("");
@@ -21,11 +19,28 @@ function BudgetsPage() {
   const [editingId, setEditingId] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all([getBudgets(), getCategories("expense"), getExpenses()])
+      .then(([nextBudgets, nextCategories, nextExpenses]) => {
+        if (!active) return;
+        setBudgets(nextBudgets);
+        setCategories(nextCategories);
+        setExpenses(nextExpenses);
+      })
+      .catch((loadError: unknown) => {
+        if (active) setError(loadError instanceof Error ? loadError.message : "Unable to load budgets.");
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
   const monthlyBudgets = budgets.filter((budget) => budget.month === currentMonth);
   const totalBudget = monthlyBudgets.reduce((sum, budget) => sum + budget.amount, 0);
   const totalSpent = expenses.filter((expense) => expense.date.startsWith(currentMonth)).reduce((sum, expense) => sum + expense.amount, 0);
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const category = categories.find((item) => item.id === categoryId);
     if (!category || Number(amount) <= 0) {
@@ -34,8 +49,8 @@ function BudgetsPage() {
     }
 
     try {
-      saveBudget(userId, { categoryId, categoryName: category.name, amount: Number(amount), month }, editingId || undefined);
-      setBudgets(getBudgets(userId));
+      await saveBudget({ categoryId, categoryName: category.name, amount: Number(amount), month }, editingId || undefined);
+      setBudgets(await getBudgets());
       setCategoryId("");
       setAmount("");
       setEditingId("");
@@ -46,10 +61,10 @@ function BudgetsPage() {
     }
   }
 
-  function removeBudget(id: string) {
+  async function removeBudget(id: string) {
     try {
-      deleteBudget(userId, id);
-      setBudgets(getBudgets(userId));
+      await deleteBudget(id);
+      setBudgets(await getBudgets());
       setNotice("Budget deleted.");
       setError("");
     } catch (deleteError) {
@@ -62,6 +77,7 @@ function BudgetsPage() {
       <PageHeader title="Budgets" subtitle="Set monthly category limits and keep an eye on your spending." />
       {notice && <div className="toast-message" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss notification">×</button></div>}
       {error && <div className="inline-error" role="alert">{error}</div>}
+      {loading && <p role="status">Loading budgets…</p>}
       <section className="summary-grid summary-grid-three">
         <SummaryCard label="Monthly budget" value={formatCurrency(totalBudget)} detail={`For ${currentMonth}`} icon="budget" tone="blue" />
         <SummaryCard label="Spent this month" value={formatCurrency(totalSpent)} detail="Across all categories" icon="expense" tone="red" valueTone="expense" />
@@ -70,7 +86,7 @@ function BudgetsPage() {
       <div className="management-layout">
         <section className="content-card"><div className="card-heading"><div><h3>Category budgets</h3><p>Progress is calculated from your expense transactions.</p></div></div>
           <div className="budget-list">{budgets.length ? budgets.map((budget) => {
-            const spent = expenses.filter((expense) => expense.categoryId === budget.categoryId && expense.date.startsWith(budget.month)).reduce((sum, expense) => sum + expense.amount, 0);
+            const spent = budget.spent ?? expenses.filter((expense) => expense.categoryId === budget.categoryId && expense.date.startsWith(budget.month)).reduce((sum, expense) => sum + expense.amount, 0);
             const percent = Math.round(spent / budget.amount * 100);
             const usage = spent / budget.amount;
             const statusTone = usage >= 1 ? "negative" : usage >= 0.8 ? "warning" : "positive";

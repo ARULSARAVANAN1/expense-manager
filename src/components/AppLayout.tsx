@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-do
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Icon from "./Icon";
-import { getExpenses } from "../services/expense.service";
+import ThemeSelector from "./ThemeSelector";
 import "./AppLayout.css";
 
 function AppLayout() {
@@ -10,15 +10,6 @@ function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [recurringError] = useState(() => {
-    try {
-      getExpenses(user?.id ?? "");
-      return "";
-    } catch (error) {
-      console.error("Unable to synchronize recurring expenses.", error);
-      return error instanceof Error ? error.message : "Unable to synchronize recurring expenses.";
-    }
-  });
   const sidebarRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const profileRef = useRef<HTMLDetailsElement>(null);
@@ -90,8 +81,12 @@ function AppLayout() {
     };
   }, [menuOpen]);
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("The server could not invalidate the current session.", error);
+    }
     navigate("/login", { replace: true });
   }
 
@@ -144,13 +139,14 @@ function AppLayout() {
               </summary>
               <div className="profile-dropdown">
                 <div className="profile-dropdown-identity"><strong>{user?.name ?? "Your account"}</strong><span>{user?.email}</span></div>
+                <ThemeSelector />
                 <Link to="/app/profile" onClick={() => { if (profileRef.current) profileRef.current.open = false; }}><Icon name="profile" size={17} />Your profile</Link>
                 <button className="profile-dropdown-logout" type="button" onClick={handleLogout}><Icon name="logout" size={17} />Log out</button>
               </div>
             </details>
           </div>
         </header>
-        <main id="main-content" className="page-content" tabIndex={-1}>{recurringError ? <div className="inline-error" role="alert">{recurringError}<button className="button button-secondary" onClick={() => window.location.reload()}>Retry</button></div> : <Outlet />}</main>
+        <main id="main-content" className="page-content" tabIndex={-1}><Outlet /></main>
       </div>
     </div>
   );

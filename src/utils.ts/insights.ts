@@ -1,5 +1,4 @@
 import type { Budget, Expense, ExpenseCategory, Income } from "../types/expense";
-import type { RecurringExpense } from "../services/recurring-expense.service";
 import { toDateKey } from "./finance";
 
 export function monthDays(month: string) {
@@ -9,31 +8,23 @@ export function monthDays(month: string) {
 
 export function monthlyInsights(
   month: string, expenses: Expense[], incomes: Income[], budgets: Budget[],
-  schedules: RecurringExpense[], categories: ExpenseCategory[], today = toDateKey(new Date()),
+  categories: ExpenseCategory[], today = toDateKey(new Date()),
 ) {
   const monthly = expenses.filter((item) => item.date.startsWith(month));
   const total = monthly.reduce((sum, item) => sum + item.amount, 0);
   const income = incomes.filter((item) => item.date.startsWith(month)).reduce((sum, item) => sum + item.amount, 0);
-  const groups = new Map<string, { name: string; spent: number; budget: number; upcoming: number }>();
+  const groups = new Map<string, { name: string; spent: number; budget: number }>();
   const group = (id: string, name: string) => {
-    if (!groups.has(id)) groups.set(id, { name, spent: 0, budget: 0, upcoming: 0 });
+    if (!groups.has(id)) groups.set(id, { name, spent: 0, budget: 0 });
     return groups.get(id)!;
   };
   monthly.forEach((item) => { group(item.categoryId, item.categoryName).spent += item.amount; });
   budgets.filter((item) => item.month === month).forEach((item) => { group(item.categoryId, item.categoryName).budget += item.amount; });
-  schedules.forEach((schedule) => {
-    const date = `${month}-${String(Math.min(Number(schedule.date.slice(8)), monthDays(month))).padStart(2, "0")}`;
-    if (date < schedule.date || (schedule.endMonth && month > schedule.endMonth)
-      || (schedule.completedThrough && schedule.completedThrough >= month)
-      || monthly.some((item) => item.id === `recurring-${schedule.id}-${month}`)) return;
-    group(schedule.categoryId, schedule.categoryName).upcoming += schedule.amount;
-  });
   const allocations = [...groups.entries()].map(([id, value]) => ({
     id, ...value, remaining: Math.max(0, value.budget - value.spent),
-    available: Math.max(0, value.budget - value.spent - value.upcoming),
+    available: Math.max(0, value.budget - value.spent),
   }));
-  const upcoming = allocations.reduce((sum, item) => sum + item.upcoming, 0);
-  const reserve = allocations.reduce((sum, item) => sum + Math.max(item.remaining, item.upcoming), 0);
+  const reserve = allocations.reduce((sum, item) => sum + item.remaining, 0);
   const balance = income - total - reserve;
   const remainingDays = month < today.slice(0, 7) ? 0
     : month === today.slice(0, 7) ? Math.max(1, monthDays(month) - Number(today.slice(8)) + 1) : monthDays(month);
@@ -69,7 +60,7 @@ export function monthlyInsights(
       detail: "At least INR 1,000 and more than 3 times this month's median transaction. This is a review prompt, not a fraud warning.",
     }));
   }
-  return { monthly, total, income, allocations, reserve, upcoming, balance, remainingDays, categoryTotals, largest, alerts,
+  return { monthly, total, income, allocations, reserve, balance, remainingDays, categoryTotals, largest, alerts,
     previousTotal, comparisonTotal, categories };
 }
 
