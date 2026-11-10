@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Icon from "../components/Icon";
+import LoadingButton from "../components/LoadingButton";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { deleteExpense, getExpense } from "../services/expense.service";
@@ -18,6 +19,7 @@ function ExpenseDetailsPage() {
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -41,13 +43,15 @@ function ExpenseDetailsPage() {
   const category = categories.find((item) => item.id === selectedExpense.categoryId);
 
   async function handleDelete() {
-    if (!user) return;
+    if (!user || deleting) return;
+    setDeleting(true);
     try {
       await deleteExpense(selectedExpense.id);
       navigate("/app/expenses", { replace: true, state: { message: "Expense deleted successfully." } });
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Unable to delete expense.");
       setConfirming(false);
+      setDeleting(false);
     }
   }
 
@@ -71,7 +75,7 @@ function ExpenseDetailsPage() {
           <div><dt>Last updated</dt><dd>{formatDate(selectedExpense.updatedAt)}</dd></div><div><dt>Notes</dt><dd>{selectedExpense.notes || "—"}</dd></div>
         </dl>
       </section>
-      {confirming && <div className="dialog-backdrop"><section className="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-detail-title"><div className="dialog-icon">!</div><h3 id="delete-detail-title">Delete this expense?</h3><p>Are you sure you want to delete this expense? This action cannot be undone.</p><div className="dialog-actions"><button className="button button-secondary" onClick={() => setConfirming(false)}>Cancel</button><button className="button button-danger" onClick={handleDelete}>Delete expense</button></div></section></div>}
+      {confirming && <div className="dialog-backdrop"><section className="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-detail-title"><div className="dialog-icon">!</div><h3 id="delete-detail-title">Delete this expense?</h3><p>Are you sure you want to delete this expense? This action cannot be undone.</p><div className="dialog-actions"><button className="button button-secondary" disabled={deleting} onClick={() => setConfirming(false)}>Cancel</button><LoadingButton className="button button-danger" loading={deleting} loadingText="Deleting..." onClick={handleDelete}>Delete expense</LoadingButton></div></section></div>}
     </>
   );
 }

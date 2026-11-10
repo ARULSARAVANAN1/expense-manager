@@ -1,6 +1,7 @@
 import DatePicker from "../components/DatePicker";
 import { useEffect, useState } from "react";
 import Icon from "../components/Icon";
+import LoadingButton from "../components/LoadingButton";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { addExpense, getExpense, updateExpense } from "../services/expense.service";
@@ -76,6 +77,7 @@ function ExpenseFormPage() {
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (saving) return;
     const nextErrors: Record<string, string> = {};
     if (!amount || !Number.isFinite(Number(amount)) || Number(amount) <= 0) nextErrors.amount = "Enter a finite amount greater than zero.";
     if (!description.trim()) nextErrors.description = "Description is required.";
@@ -124,7 +126,7 @@ function ExpenseFormPage() {
           </div>
           <label className="field-label" htmlFor="expense-date">Expense date <b>*</b><DatePicker id="expense-date" type="date" value={date} onChange={(value) => setDate(value)} aria-invalid={Boolean(errors.date)} />{errors.date && <small className="field-error">{errors.date}</small>}</label>
           <label className="field-label" htmlFor="expense-notes">Notes <span className="optional-label">Optional</span><textarea id="expense-notes" rows={3} placeholder="Add any additional details..." value={notes} onChange={(event) => setNotes(event.target.value)} /></label>
-          <div className="form-actions"><Link className="button button-secondary" to={isEditing ? `/app/expenses/${expenseId}` : "/app/expenses"}>Cancel</Link><button className="button button-primary" disabled={saving}><Icon name="save" size={16} />{saving ? "Saving…" : isEditing ? "Save changes" : "Save expense"}</button></div>
+          <div className="form-actions"><Link className="button button-secondary" aria-disabled={saving} onClick={(event) => { if (saving) event.preventDefault(); }} to={isEditing ? `/app/expenses/${expenseId}` : "/app/expenses"}>Cancel</Link><LoadingButton className="button button-primary" loading={saving}><Icon name="save" size={16} />{isEditing ? "Save changes" : "Save expense"}</LoadingButton></div>
         </form>
         <aside className="preview-card content-card"><div className="card-heading"><div><h3>Live preview</h3><p>How this will appear in your expenses</p></div></div>
           <div className="preview-expense"><div className="preview-icon" style={getCategoryStyle(category)}><Icon name={category?.icon ?? "categories"} size={22} /></div><div className="preview-description"><strong>{description || "Expense description"}</strong><span>{category?.name ?? "Category"} · {account?.name ?? "No account"}</span><small>{date ? formatDate(date) : "Expense date"}</small></div></div>

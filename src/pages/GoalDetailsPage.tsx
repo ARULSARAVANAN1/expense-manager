@@ -64,10 +64,10 @@ function GoalDetailsPage() {
     setBusy(true);
     try {
       await addGoalContribution(goalId, contribution);
+      setGoal(await getGoal(goalId));
       setShowContribution(false);
       setNotice("Contribution added to your goal.");
       setError("");
-      setGoal(await getGoal(goalId));
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Unable to add this contribution.");
     } finally {
@@ -158,7 +158,7 @@ function GoalDetailsPage() {
       } />
       {notice && <div className="toast-message" role="status">{notice}<button type="button" onClick={() => setNotice("")} aria-label="Dismiss notification">×</button></div>}
       {error && <div className="inline-error" role="alert">{error}<button type="button" className="button button-secondary" disabled={busy} onClick={retryLoad}>Reload goal</button></div>}
-      {busy && <p role="status">Saving your goal changes...</p>}
+      {busy && !showContribution && !confirmAction && <div className="goal-loading" role="status"><span className="button-spinner" aria-hidden="true" />Updating goal...</div>}
 
       <section className="goal-overview-card content-card">
         <div className="goal-overview-main">

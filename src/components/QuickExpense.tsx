@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { parseExpense, validateExpenseImage } from "../services/expense.service";
 import Icon from "./Icon";
+import LoadingButton from "./LoadingButton";
 import "./QuickExpense.css";
 
 function InfoTip({ label, children }: { label: string; children: string }) {
@@ -129,9 +130,9 @@ export default function QuickExpense() {
             <span className="quick-expense-upload-limit">{attachment ? "Bill attached" : "Image up to 2 MB"}</span>
             <InfoTip label="Bill image requirements">Choose or drop one PNG, JPG, or other image file, up to 2 MB. Use a clear photo with the total and date visible. You can add optional details above.</InfoTip>
           </div>
-          <button type="submit" className="button button-primary quick-expense-submit" disabled={saving || (!command.trim() && !attachment)}>
-            <Icon name={saving ? "clock" : "sparkle"} size={16} />{saving ? "Preparing draft..." : "Create draft"}
-          </button>
+          <LoadingButton type="submit" className="button button-primary quick-expense-submit" loading={saving} loadingText="Preparing draft..." disabled={!command.trim() && !attachment}>
+            <Icon name="sparkle" size={16} />Create draft
+          </LoadingButton>
         </div>
       </div>
       <input ref={imageInput} id="quick-expense-image" className="sr-only" type="file" accept="image/*" disabled={saving} tabIndex={-1}

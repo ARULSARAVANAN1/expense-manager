@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
 import Icon from "../components/Icon";
+import LoadingButton from "../components/LoadingButton";
 import { deleteCategory, getFinanceCategories, getIncomes, saveCategory } from "../services/finance-data.service";
 import { getExpenses } from "../services/expense.service";
 import type { Expense, FinanceCategory, Income } from "../types/expense";
@@ -22,6 +23,9 @@ function CategoriesPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const busy = saving || deletingId !== null;
 
   useEffect(() => {
     let active = true;
@@ -40,6 +44,7 @@ function CategoriesPage() {
   }, []);
 
   function startEdit(category: FinanceCategory) {
+    if (busy) return;
     setEditing(category);
     setName(category.name);
     setIcon(category.icon);
@@ -60,21 +65,27 @@ function CategoriesPage() {
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (busy) return;
     if (!name.trim()) {
       setError("Enter a category name.");
       return;
     }
     try {
+      setSaving(true);
       await saveCategory({ name: name.trim(), icon: icon.trim() || "◈", color, type }, editing?.id);
       setCategories(await getFinanceCategories());
       setNotice(editing ? "Category updated." : "Category added.");
       resetForm();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Unable to save category.");
+    } finally {
+      setSaving(false);
     }
   }
 
   async function remove(category: FinanceCategory) {
+    if (busy) return;
+    setDeletingId(category.id);
     try {
       await deleteCategory(category.id);
       setCategories(await getFinanceCategories());
@@ -82,6 +93,8 @@ function CategoriesPage() {
       setError("");
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Unable to delete category.");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -105,7 +118,7 @@ function CategoriesPage() {
               return <article className="manage-row" key={category.id}>
                 <span className="category-chip-icon manage-icon" style={getCategoryStyle(category)}><Icon name={category.icon} size={20} /></span>
                 <div className="manage-row-info"><strong>{category.name}</strong><span><span data-finance-tone={category.type}>{category.type === "expense" ? "Expense" : "Income"}</span> · {count} transaction{count === 1 ? "" : "s"}</span></div>
-                <div className="manage-row-actions"><button className="row-action" title="Edit category" aria-label={`Edit ${category.name}`} onClick={() => startEdit(category)}><Icon name="edit" size={16} /></button><button className="row-action delete-row-action" aria-label={`Delete ${category.name}`} disabled={count > 0} title={count ? "This category is used by transactions" : "Delete category"} onClick={() => remove(category)}><Icon name="delete" size={16} /></button></div>
+                <div className="manage-row-actions"><button className="row-action" disabled={busy} title="Edit category" aria-label={`Edit ${category.name}`} onClick={() => startEdit(category)}><Icon name="edit" size={16} /></button><LoadingButton className="row-action delete-row-action" loading={deletingId === category.id} loadingText="" aria-label={deletingId === category.id ? `Deleting ${category.name}` : `Delete ${category.name}`} disabled={count > 0 || busy} title={count ? "This category is used by transactions" : "Delete category"} onClick={() => remove(category)}><Icon name="delete" size={16} /></LoadingButton></div>
               </article>;
             })}
           </div>
@@ -120,7 +133,7 @@ function CategoriesPage() {
           </div>
           <fieldset className="icon-picker"><legend>Choose an icon</legend><div className="icon-picker-grid">{["food", "groceries", "transport", "shopping", "bills", "health", "entertainment", "travel", "education", "salary", "gift", "sparkle"].map((name) => <button key={name} type="button" title={name} aria-label={`Use ${name} icon`} aria-pressed={icon === name} style={{ color }} onClick={() => setIcon(name)}><Icon name={name} size={21} /></button>)}</div></fieldset>
           <div className="category-style-preview"><span className="manage-icon" style={getCategoryStyle({ id: editing?.id ?? "", name, icon, color })}><Icon name={icon} size={23} /></span><div><strong>{name.trim() || "Your category"}</strong><small>{type === "expense" ? "Expense" : "Income"} category preview</small></div></div>
-          <div className="form-actions"><button className="button button-secondary" type="button" onClick={resetForm}><Icon name="reset" size={16} />Clear</button><button className="button button-primary"><Icon name={editing ? "save" : "plus"} size={16} />{editing ? "Save category" : "Add category"}</button></div>
+          <div className="form-actions"><button className="button button-secondary" type="button" disabled={busy} onClick={resetForm}><Icon name="reset" size={16} />Clear</button><LoadingButton className="button button-primary" loading={saving} disabled={busy}><Icon name={editing ? "save" : "plus"} size={16} />{editing ? "Save category" : "Add category"}</LoadingButton></div>
         </form>
       </div>
     </>

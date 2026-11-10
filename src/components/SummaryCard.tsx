@@ -9,15 +9,21 @@ interface SummaryCardProps {
   valueTone?: FinanceTone;
   detailTone?: FinanceTone;
   featured?: boolean;
+  loading?: boolean;
+  unavailable?: boolean;
 }
 
-function SummaryCard({ label, value, detail, icon, tone = "blue", valueTone, detailTone, featured = false }: SummaryCardProps) {
+function SummaryCard({ label, value, detail, icon, tone = "blue", valueTone, detailTone, featured = false, loading = false, unavailable = false }: SummaryCardProps) {
   return (
-    <article className={`summary-card${featured ? " summary-card--featured" : ""}`}>
+    <article className={`summary-card${featured ? " summary-card--featured" : ""}`} aria-busy={loading}>
       <div className={`summary-icon ${tone}`}><Icon name={icon} size={19} /></div>
       <span className="summary-label">{label}</span>
-      <strong className="summary-value" data-finance-tone={valueTone}>{value}</strong>
-      <span className="summary-detail" data-finance-tone={detailTone}>{detail}</span>
+      <strong className="summary-value" data-finance-tone={loading || unavailable ? undefined : valueTone} aria-label={loading ? `Loading ${label.toLowerCase()}` : undefined}>
+        {loading ? <span className="summary-skeleton summary-skeleton-value" aria-hidden="true" /> : unavailable ? "Unavailable" : value}
+      </strong>
+      <span className="summary-detail" data-finance-tone={loading || unavailable ? undefined : detailTone}>
+        {loading ? <span className="summary-skeleton summary-skeleton-detail" aria-hidden="true" /> : unavailable ? "Unable to load data" : detail}
+      </span>
     </article>
   );
 }

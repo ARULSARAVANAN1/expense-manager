@@ -467,6 +467,33 @@ button:disabled {
   box-shadow: var(--shadow-card);
 }
 
+.summary-skeleton {
+  display: inline-block;
+  max-width: 100%;
+  border-radius: 4px;
+  background: var(--border);
+  vertical-align: middle;
+  animation: summary-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.summary-skeleton-value {
+  width: 120px;
+  height: 1em;
+}
+
+.summary-skeleton-detail {
+  width: 160px;
+  height: 1em;
+}
+
+@keyframes summary-skeleton-pulse {
+  50% { opacity: .4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary-skeleton { animation: none; }
+}
+
 .summary-icon {
   width: 31px;
   height: 31px;

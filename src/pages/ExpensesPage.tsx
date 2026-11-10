@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import Icon from "../components/Icon";
+import LoadingButton from "../components/LoadingButton";
 import SummaryCard from "../components/SummaryCard";
 import ExpenseAnalysis from "../components/ExpenseAnalysis";
 import { useAuth } from "../contexts/AuthContext";
@@ -32,6 +33,7 @@ function ExpensesPage() {
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
   const [pendingDelete, setPendingDelete] = useState<Expense | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState(typeof location.state?.message === "string" ? location.state.message : "");
   const [error, setError] = useState("");
 
@@ -73,15 +75,18 @@ function ExpensesPage() {
   }
 
   async function confirmDelete() {
-    if (!pendingDelete || !user) return;
+    if (!pendingDelete || !user || deleting) return;
+    setDeleting(true);
     try {
       await deleteExpense(pendingDelete.id);
-      setPendingDelete(null);
       setExpenses(await getExpenses());
+      setPendingDelete(null);
       setToast("Expense deleted successfully.");
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Unable to delete expense.");
       setPendingDelete(null);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -124,7 +129,7 @@ function ExpensesPage() {
           <div className="table-footer"><span>Showing {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} expenses</span><div className="pagination"><button disabled={page <= 1} onClick={() => setPage(page - 1)}>←</button><span>{page} / {pageCount}</span><button disabled={page >= pageCount} onClick={() => setPage(page + 1)}>→</button></div></div>
         </> : <div className="empty-state"><span>⌕</span><h3>No expenses found</h3><p>Try adjusting your filters or add a new expense.</p><button className="button button-secondary" onClick={resetFilters}>Reset filters</button></div>}
       </section>
-      {pendingDelete && <div className="dialog-backdrop" role="presentation" onClick={() => setPendingDelete(null)}><section className="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" onClick={(event) => event.stopPropagation()}><div className="dialog-icon">!</div><h3 id="delete-title">Delete this expense?</h3><p>Are you sure you want to delete “{pendingDelete.description}”? This action cannot be undone.</p><div className="dialog-actions"><button className="button button-secondary" onClick={() => setPendingDelete(null)}>Cancel</button><button className="button button-danger" onClick={confirmDelete}>Delete expense</button></div></section></div>}
+      {pendingDelete && <div className="dialog-backdrop" role="presentation" onClick={() => { if (!deleting) setPendingDelete(null); }}><section className="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" onClick={(event) => event.stopPropagation()}><div className="dialog-icon">!</div><h3 id="delete-title">Delete this expense?</h3><p>Are you sure you want to delete “{pendingDelete.description}”? This action cannot be undone.</p><div className="dialog-actions"><button className="button button-secondary" disabled={deleting} onClick={() => setPendingDelete(null)}>Cancel</button><LoadingButton className="button button-danger" loading={deleting} loadingText="Deleting..." onClick={confirmDelete}>Delete expense</LoadingButton></div></section></div>}
     </>
   );
 }

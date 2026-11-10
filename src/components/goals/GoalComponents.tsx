@@ -10,6 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import Icon from "../Icon";
+import LoadingButton from "../LoadingButton";
 import type { FinancialGoal, GoalCategory, GoalContribution, GoalInput } from "../../types/goals";
 import { formatCurrency } from "../../utils.ts/finance";
 import { goalCategoryIcons } from "./goal-icons";
@@ -159,7 +160,7 @@ export function ContributionDialog({ onClose, onSave, busy = false, error }: {
         <label className="field-label">Amount (INR)<input disabled={busy} type="number" min="0.01" step="0.01" required value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="0.00" /></label>
         <label className="field-label">Description<input disabled={busy} maxLength={500} required value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Monthly savings" /></label>
         <label className="field-label">Date<input disabled={busy} type="date" required value={date} onChange={(event) => setDate(event.target.value)} /></label>
-        <div className="dialog-actions"><button disabled={busy} className="button button-secondary" type="button" onClick={onClose}>Cancel</button><button disabled={busy} className="button button-primary">{busy ? "Saving..." : "Add contribution"}</button></div>
+        <div className="dialog-actions"><button disabled={busy} className="button button-secondary" type="button" onClick={onClose}>Cancel</button><LoadingButton loading={busy} className="button button-primary">Add contribution</LoadingButton></div>
       </form>
     </div>
   );
@@ -172,7 +173,7 @@ export function ConfirmDialog({ title, message, confirmLabel = "Delete", onCance
     <div className="goal-dialog-backdrop" onMouseDown={(event) => { if (!busy && event.target === event.currentTarget) onCancel(); }}>
       <section className="goal-dialog confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="goal-confirm-title">
         <span className="goal-dialog-icon danger"><Icon name="warning" /></span><h2 id="goal-confirm-title">{title}</h2><p>{message}</p>
-        <div className="dialog-actions"><button disabled={busy} className="button button-secondary" type="button" onClick={onCancel}>Cancel</button><button disabled={busy} className="button button-danger" type="button" onClick={onConfirm}>{busy ? "Deleting..." : confirmLabel}</button></div>
+        <div className="dialog-actions"><button disabled={busy} className="button button-secondary" type="button" onClick={onCancel}>Cancel</button><LoadingButton loading={busy} loadingText="Deleting..." className="button button-danger" type="button" onClick={onConfirm}>{confirmLabel}</LoadingButton></div>
       </section>
     </div>
   );
@@ -292,7 +293,7 @@ export function GoalForm({ initial, onSave, onCancel, saving = false }: {
         </div>
         <button className="goal-generate-plan" type="button" onClick={generatePlan}><Icon name="sparkle" size={17} />Generate AI savings plan</button>
         {planGenerated && <p className="goal-plan-feedback" role="status">Suggested monthly savings: {formatCurrency(Number(monthlyContribution))}</p>}
-        <div className="form-actions"><button className="button button-secondary" type="button" onClick={onCancel}>Cancel</button><button className="button button-primary"><Icon name="check" size={17} />{saving ? "Saving..." : initial ? "Save changes" : "Save goal"}</button></div>
+        <div className="form-actions"><button className="button button-secondary" type="button" onClick={onCancel}>Cancel</button><LoadingButton loading={saving} className="button button-primary"><Icon name="check" size={17} />{initial ? "Save changes" : "Save goal"}</LoadingButton></div>
       </fieldset>
       <aside className="goal-form-preview content-card">
         <div className="card-heading"><div><h3>Live goal preview</h3><p>Your plan takes shape as you fill in the details.</p></div></div>

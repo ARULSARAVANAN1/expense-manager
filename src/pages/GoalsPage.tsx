@@ -101,6 +101,7 @@ function GoalsPage() {
       {notice && <div className="toast-message" role="status">{notice}<button type="button" onClick={() => setNotice("")} aria-label="Dismiss notification">×</button></div>}
       {error && <div className="inline-error" role="alert">{error}<button type="button" className="button button-secondary" disabled={busy || loading} onClick={() => { setLoading(true); setReload((value) => value + 1); }}>Retry</button></div>}
       {loading && <div className="goal-loading" role="status"><span className="goal-loading-spinner" />Loading your goals…</div>}
+      {busy && !pendingDelete && <div className="goal-loading" role="status"><span className="button-spinner" aria-hidden="true" />Updating goal...</div>}
       {!loading && (!error || goals.length > 0) && <>
         <section className="goal-summary-grid" aria-label="Goal summary">
           <GoalSummaryCard title="Total saved" value={formatCurrency(totals.saved)} detail="Across all your goals" icon="wallet" tone="emerald" />

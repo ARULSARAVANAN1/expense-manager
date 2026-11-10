@@ -148,13 +148,13 @@ function DashboardPage() {
         <a className="text-link" href="#dashboard-activity-title">Explore activity<Icon name="next" size={15} /></a>
       </aside>
 
-      <section className="summary-grid dashboard-summary" aria-label={`${monthLabel} summary`}>
-        <SummaryCard label="Monthly spending" value={formatCurrency(total)} detail={changeDetail} icon="expense" tone="red" valueTone="expense" detailTone={previousTotal && total !== previousTotal ? total > previousTotal ? "negative" : "positive" : undefined} featured />
-        <SummaryCard label="Income" value={formatCurrency(incomeTotal)} detail="Received this month" icon="income" tone="green" valueTone="income" />
-        <SummaryCard label="Balance" value={formatCurrency(incomeTotal - total)} detail="Monthly income minus expenses" icon="wallet" tone={incomeTotal >= total ? "green" : "red"} valueTone={incomeTotal === total ? undefined : incomeTotal > total ? "positive" : "negative"} />
-        <SummaryCard label="Transactions" value={String(monthlyExpenses.length)} detail="Expenses this month" icon="transactions" tone="purple" />
-        <SummaryCard label="Daily average" value={formatCurrency(total / days)} detail={`${days} days in period`} icon="clock" tone="red" valueTone="expense" />
-        <SummaryCard label="Top category" value={topCategory?.name ?? "No spending"} detail={topCategory ? `${formatCurrency(topCategory.total)} this month` : "Add your first expense"} icon="categories" tone="orange" detailTone={topCategory ? "expense" : undefined} />
+      <section className="summary-grid dashboard-summary" aria-label={`${monthLabel} summary`} aria-busy={loading}>
+        <SummaryCard loading={loading} unavailable={!!loadError} label="Monthly spending" value={formatCurrency(total)} detail={changeDetail} icon="expense" tone="red" valueTone="expense" detailTone={previousTotal && total !== previousTotal ? total > previousTotal ? "negative" : "positive" : undefined} featured />
+        <SummaryCard loading={loading} unavailable={!!loadError} label="Income" value={formatCurrency(incomeTotal)} detail="Received this month" icon="income" tone="green" valueTone="income" />
+        <SummaryCard loading={loading} unavailable={!!loadError} label="Balance" value={formatCurrency(incomeTotal - total)} detail="Monthly income minus expenses" icon="wallet" tone={incomeTotal >= total ? "green" : "red"} valueTone={incomeTotal === total ? undefined : incomeTotal > total ? "positive" : "negative"} />
+        <SummaryCard loading={loading} unavailable={!!loadError} label="Transactions" value={String(monthlyExpenses.length)} detail="Expenses this month" icon="transactions" tone="purple" />
+        <SummaryCard loading={loading} unavailable={!!loadError} label="Daily average" value={formatCurrency(total / days)} detail={`${days} days in period`} icon="clock" tone="red" valueTone="expense" />
+        <SummaryCard loading={loading} unavailable={!!loadError} label="Top category" value={topCategory?.name ?? "No spending"} detail={topCategory ? `${formatCurrency(topCategory.total)} this month` : "Add your first expense"} icon="categories" tone="orange" detailTone={topCategory ? "expense" : undefined} />
       </section>
 
       <MonthlyAiSummary key={`${userId}-${month}`} month={month} />
