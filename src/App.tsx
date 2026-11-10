@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import LoadingScreen from "./components/LoadingScreen";
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ExpensesPage = lazy(() => import("./pages/ExpensesPage"));
@@ -27,7 +28,7 @@ const GoalFormPage = lazy(() => import("./pages/GoalFormPage"));
 const GoalDetailsPage = lazy(() => import("./pages/GoalDetailsPage"));
 
 function Page({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<div className="route-loading">Loading page…</div>}>{children}</Suspense>;
+  return <Suspense fallback={<LoadingScreen />}>{children}</Suspense>;
 }
 
 function App() {

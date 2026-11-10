@@ -447,20 +447,31 @@
 
   .mobile-menu-toggle {
     position: fixed;
-    top: 20px;
+    top: 19px;
     z-index: 16;
   }
 
   .topbar {
-    padding-left: var(--space-12);
+    align-items: center;
+    padding-left: 76px;
+  }
+
+  .topbar-heading,
+  .topbar-actions {
+    align-items: center;
   }
 }
 
 @media (max-width: 640px) {
   .topbar {
+    height: 68px;
     gap: var(--space-2);
-    padding-left: var(--space-12);
+    padding-left: 76px;
     padding-right: var(--space-3);
+  }
+
+  .mobile-menu-toggle {
+    top: 15px;
   }
 
   .topbar-heading {
@@ -472,10 +483,18 @@
   }
 
   .topbar h1 {
+    overflow: hidden;
     font-size: var(--font-size-body);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .topbar-heading {
+    flex: 1;
   }
 
   .topbar-actions {
+    flex: 0 0 auto;
     gap: var(--space-2);
   }
 
@@ -487,15 +506,41 @@
   }
 
   .topbar-add>span,
-  .topbar-profile>span {
+  .topbar-profile>span:not(.profile-avatar) {
     display: none;
   }
 
+  .topbar-account .topbar-profile {
+    min-width: 36px;
+    min-height: 36px;
+    justify-content: center;
+    padding: 0;
+  }
+
   .topbar-profile {
-    padding-left: var(--space-2);
+    padding-left: 0;
   }
 
   .topbar-account {
-    padding-left: var(--space-2);
+    padding-left: var(--space-1);
+  }
+}
+
+
+@media (max-width: 380px) {
+  .topbar {
+    padding-right: var(--space-2);
+  }
+
+  .topbar h1 {
+    font-size: var(--font-size-secondary);
+  }
+
+  .topbar-actions {
+    gap: var(--space-1);
+  }
+
+  .topbar-account {
+    padding-left: var(--space-1);
   }
 }

@@ -1,4 +1,4 @@
-# Expense & Finance Manager
+# Expense Manager
 
 A full-stack expense and finance management application built while learning React and Node.js.
 
@@ -62,12 +62,43 @@ motion and pointer parallax. Decorations never intercept form interaction,
 are hidden from assistive technology, simplify on mobile, and respect reduced
 motion preferences. Illustrations are decorative, not actual financial data.
 
+## Deploy to Vercel
+
+This frontend uses Vercel Git integration. No Vercel dependency or GitHub Actions
+YAML workflow is required. `vercel.json` configures the Vite build, `dist` output,
+and React Router fallback for direct links and page refreshes.
+
+1. Push the repository to GitHub and import it as a new project in Vercel.
+   Select the directory containing this frontend's `package.json` as the Root
+   Directory. Use the Vite framework preset and Node.js 22.x.
+2. Under Project Settings > Environment Variables, set
+   `VITE_API_BASE_URL=https://expense-manager-backend-two.vercel.app/api`
+   for Production. Configure Preview separately if you want preview deployments
+   to access that backend.
+3. If enabling Google sign-in, also set the public `VITE_GOOGLE_CLIENT_ID`.
+4. Deploy. Vercel runs `npm ci` and `npm run build`, then serves `dist`.
+   Pushes to the configured production branch trigger production deployments;
+   other branches and pull requests can create preview deployments.
+5. Allow the deployed frontend origin in the backend's CORS configuration.
+   For Google sign-in, add that origin to the Google OAuth client's Authorized
+   JavaScript origins.
+
+Vite embeds these public environment variables at build time. Redeploy after
+changing them. Verify login, API requests, and a direct visit or refresh at
+`/app/dashboard` after deployment.
+
 ## Google sign-in setup
 
 The frontend uses the documented API at `http://localhost:3000/api` by default.
-Set `VITE_API_BASE_URL` when the backend runs at a different origin or base path,
-then restart Vite. Finance records are loaded from and saved to the API; only the
-application session token and appearance preference are kept in local storage.
+`VITE_API_BASE_URL` is configured in `.env.development.local` for local testing
+and `.env.production` for production builds. Set the production value to the
+deployed API base URL before running `npm run build`. A blank value uses relative
+URLs and is not suitable for a separately deployed backend. You can also
+configure the value in your deployment provider's build environment, which takes
+precedence over environment files. Vite embeds `VITE_` variables in
+the client bundle, so only use public configuration values there, never secrets.
+Finance records are loaded from and saved to the API; only the application
+session token and appearance preference are kept in local storage.
 
 The login page integrates Google Identity Services via `@react-oauth/google`.
 Email/password login remains available. Without configuration, a disabled

@@ -8,6 +8,8 @@ import type {
     User,
 } from "../types/auth";
 
+let currentUserRequest: Promise<User> | null = null;
+
 export async function register(
     data: RegisterRequest
 ): Promise<AuthResponse> {
@@ -24,10 +26,16 @@ export async function login(
     );
 }
 
-export async function getCurrentUser(): Promise<User> {
-    return unwrapResponse(
-        api.get<ApiResponse<User>>("/auth/me"),
-    );
+export function getCurrentUser(): Promise<User> {
+    if (!currentUserRequest) {
+        currentUserRequest = unwrapResponse(
+            api.get<ApiResponse<User>>("/auth/me"),
+        ).finally(() => {
+            currentUserRequest = null;
+        });
+    }
+
+    return currentUserRequest;
 }
 
 export async function loginWithGoogle(credential: string): Promise<AuthResponse> {

@@ -109,7 +109,7 @@ function AppLayout() {
       <aside ref={sidebarRef} id="app-navigation" className={`app-sidebar${menuOpen ? " is-open" : ""}`} role={menuOpen ? "dialog" : undefined} aria-modal={menuOpen || undefined} aria-label="App navigation">
         <button className="sidebar-close" type="button" aria-label="Close navigation" onClick={() => setMenuOpen(false)}><Icon name="close" /></button>
         <NavLink className="brand" to="/app/dashboard" onClick={() => setMenuOpen(false)}>
-          <span className="brand-mark"><Icon name="rupee" size={24} /></span><span className="brand-name">Expense Manager<small>Make every rupee count</small></span>
+          <span className="brand-mark"><Icon name="wallet" size={24} /></span><span className="brand-name">Expense Manager<small>Make every rupee count</small></span>
         </NavLink>
         <div className="sidebar-navigation">
         <nav className="sidebar-nav" aria-label="Main navigation">
