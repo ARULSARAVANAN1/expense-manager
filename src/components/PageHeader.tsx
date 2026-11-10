@@ -9,6 +9,9 @@ const pageIcons: Record<string, string> = {
   Categories: "categories",
   Accounts: "wallet",
   Budgets: "budget",
+  "Financial Goals": "target",
+  "Create a Goal": "target",
+  "Edit Goal": "target",
 };
 
 interface PageHeaderProps {

@@ -6,6 +6,7 @@ import PageHeader from "../components/PageHeader";
 import SummaryCard from "../components/SummaryCard";
 import QuickExpense from "../components/QuickExpense";
 import MonthlyInsights from "../components/MonthlyInsights";
+import MonthlyAiSummary from "../components/MonthlyAiSummary";
 import { CategoryDonutChart, DailyExpenseChart } from "../components/FinanceCharts";
 import { useAuth } from "../contexts/AuthContext";
 import { getExpenses } from "../services/expense.service";
@@ -156,6 +157,7 @@ function DashboardPage() {
         <SummaryCard label="Top category" value={topCategory?.name ?? "No spending"} detail={topCategory ? `${formatCurrency(topCategory.total)} this month` : "Add your first expense"} icon="categories" tone="orange" detailTone={topCategory ? "expense" : undefined} />
       </section>
 
+      <MonthlyAiSummary key={`${userId}-${month}`} month={month} />
       <QuickExpense />
       {loadError && <div className="inline-error" role="alert">{loadError}<button className="button button-secondary" onClick={() => { setLoading(true); setReload((value) => value + 1); }}>Retry</button></div>}
       {loading && <p role="status">Loading your finance data…</p>}

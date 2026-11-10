@@ -21,9 +21,10 @@ function AppLayout() {
     : location.pathname.startsWith("/app/categories") ? "Categories"
     : location.pathname.startsWith("/app/accounts") ? "Accounts"
     : location.pathname.startsWith("/app/budgets") ? "Budgets"
+    : location.pathname.startsWith("/app/goals") ? "Financial Goals"
     : location.pathname.startsWith("/app/recurring") ? "Recurring expenses"
     : location.pathname.startsWith("/app/profile") ? "Your profile"
-    : location.pathname.startsWith("/app/shared") ? "Shared expenses" : "Dashboard";
+    : "Dashboard";
   const pageIcon = location.pathname.split("/")[2] ?? "dashboard";
   const initial = user?.name?.slice(0, 1).toUpperCase() || "U";
   const dateLabel = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(currentDate);
@@ -122,8 +123,8 @@ function AppLayout() {
           <NavLink to="/app/accounts" onClick={() => setMenuOpen(false)}><Icon name="wallet" />Accounts</NavLink>
           <NavLink to="/app/categories" onClick={() => setMenuOpen(false)}><Icon name="categories" />Categories</NavLink>
           <NavLink to="/app/budgets" onClick={() => setMenuOpen(false)}><Icon name="budget" />Budgets</NavLink>
+          <NavLink to="/app/goals" onClick={() => setMenuOpen(false)}><Icon name="target" />Financial Goals</NavLink>
           <NavLink to="/app/recurring" onClick={() => setMenuOpen(false)}><Icon name="recurring" />Recurring expenses</NavLink>
-          <NavLink to="/app/shared" onClick={() => setMenuOpen(false)}><Icon name="transactions" />Shared expenses</NavLink>
         </nav>
         </div>
         <div className="sidebar-bottom">
@@ -134,7 +135,7 @@ function AppLayout() {
       </aside>
       <div className="app-main" inert={menuOpen}>
         <header className="topbar">
-          <div className="topbar-heading"><span className="topbar-page-icon" data-page={pageIcon}><Icon name={pageIcon === "shared" ? "transactions" : pageIcon === "accounts" ? "wallet" : pageIcon === "expenses" ? "expense" : pageIcon === "budgets" ? "budget" : pageIcon} size={21} /></span><h1>{pageTitle}</h1></div>
+          <div className="topbar-heading"><span className="topbar-page-icon" data-page={pageIcon}><Icon name={pageIcon === "accounts" ? "wallet" : pageIcon === "expenses" ? "expense" : pageIcon === "budgets" ? "budget" : pageIcon === "goals" ? "target" : pageIcon} size={21} /></span><h1>{pageTitle}</h1></div>
           <div className="topbar-actions">
             <time className="topbar-date" dateTime={dateValue} aria-label={`Today, ${weekdayLabel}, ${dateLabel}`}>
               <span className="topbar-date-icon"><Icon name="clock" size={20} /></span>

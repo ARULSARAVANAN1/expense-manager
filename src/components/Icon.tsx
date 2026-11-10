@@ -1,6 +1,11 @@
 import type { CSSProperties } from "react";
 
 const paths = {
+  trend: "M3 17l6-6 4 4 8-10 M15 5h6v6",
+  bulb: "M9 18h6 M9 21h6 M8 14a6 6 0 1 1 8 0c-1 1-1 2-1 4H9c0-2 0-3-1-4",
+  "circle-check": "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M8 12l3 3 5-6",
+  info: "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M12 11v6 M12 7h.01",
+  image: "M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z M3 16l5-5 5 5 3-3 5 5 M16 7h.01",
   profile: "M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M4 21v-2a8 8 0 0 1 16 0v2",
   lock: "M5 10h14v11H5z M8 10V6a4 4 0 0 1 8 0v4 M12 14v3",
   recurring: "M20 7a9 9 0 0 0-15-2L2 8 M2 3v5h5 M4 17a9 9 0 0 0 15 2l3-3 M22 21v-5h-5",
@@ -40,6 +45,15 @@ const paths = {
   sparkle: "m12 3 3 6 6 3-6 3-3 6-3-6-6-3 6-3z",
   warning: "m12 3 10 18H2z M12 9v5m0 3h.01",
   check: "m5 12 4 4L19 6",
+  target: "M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10z M12 18a6 6 0 1 0-6-6 6 6 0 0 0 6 6z M12 14a2 2 0 1 0-2-2 2 2 0 0 0 2 2z",
+  laptop: "M4 5h16v11H4z M2 20h20l-2-4H4z",
+  home: "m3 10 9-7 9 7 M5 9v12h14V9 M9 21v-7h6v7",
+  vehicle: "M5 11 7 5h10l2 6 M3 11h18v8H3z M6 19v2m12-2v2 M6 15h.01M18 15h.01",
+  plane: "m2 12 20-9-6 19-4-7-10-3z M12 15l4-4",
+  heart: "M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z",
+  flag: "M4 22V4m0 0c6-4 10 4 16 0v12c-6 4-10-4-16 0",
+  pause: "M8 5h3v14H8z M15 5h3v14h-3z",
+  more: "M5 12h.01M12 12h.01M19 12h.01",
 } satisfies Record<string, string>;
 
 const aliases: Record<string, keyof typeof paths> = {

@@ -22,7 +22,9 @@ const AccountsPage = lazy(() => import("./pages/AccountsPage"));
 const BudgetsPage = lazy(() => import("./pages/BudgetsPage"));
 const RecurringExpensesPage = lazy(() => import("./pages/RecurringExpensesPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
-const SplitExpensesPage = lazy(() => import("./pages/SplitExpensesPage"));
+const GoalsPage = lazy(() => import("./pages/GoalsPage"));
+const GoalFormPage = lazy(() => import("./pages/GoalFormPage"));
+const GoalDetailsPage = lazy(() => import("./pages/GoalDetailsPage"));
 
 function Page({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<div className="route-loading">Loading page…</div>}>{children}</Suspense>;
@@ -57,7 +59,10 @@ function App() {
             <Route path="budgets" element={<Page><BudgetsPage /></Page>} />
             <Route path="recurring" element={<Page><RecurringExpensesPage /></Page>} />
             <Route path="profile" element={<Page><ProfilePage /></Page>} />
-            <Route path="shared" element={<Page><SplitExpensesPage /></Page>} />
+            <Route path="goals" element={<Page><GoalsPage /></Page>} />
+            <Route path="goals/new" element={<Page><GoalFormPage /></Page>} />
+            <Route path="goals/:goalId/edit" element={<Page><GoalFormPage /></Page>} />
+            <Route path="goals/:goalId" element={<Page><GoalDetailsPage /></Page>} />
           </Route>
         </Route>
 

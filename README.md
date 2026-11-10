@@ -30,6 +30,7 @@ A full-stack expense and finance management application built while learning Rea
 - Budgets
 - Reports
 - Dashboard
+- Financial goals and contribution history
 
 ## Project Structure
 
@@ -112,6 +113,19 @@ entry, and a compact account identity. On mobile, navigation opens as a drawer
 with keyboard focus containment, Escape/backdrop dismissal, and scroll locking.
 A skip link provides direct keyboard access to page content.
 
+Quick expense accepts text or a bill image (PNG, JPG, and other image formats)
+up to 2 MB (2,097,152 bytes), with optional text details. Empty files and
+non-image files are rejected before upload. Text-only requests continue to use
+JSON at `POST /expenses/parse`; image requests use the same endpoint with
+`multipart/form-data`, an `image` file field, and an optional `text` field.
+Both return the existing expense draft and clarification response for review;
+nothing is saved automatically. The backend must also validate image content
+and enforce the size limit.
+The AI-assisted composer includes keyboard/touch-accessible information
+tooltips, image drag-and-drop, and an attachment card with a local thumbnail,
+file size, replace, and remove actions. Selecting a file does not upload it;
+Create draft sends it for parsing. Invalid replacements keep the current bill.
+
 All date and month selection uses the free, MIT-licensed `react-datepicker`
 calendar, including filters, transaction forms, budgets, and the dashboard.
 Expense analysis supports a daily view for a chosen month and a monthly view
@@ -120,6 +134,17 @@ for a chosen year; selecting a point or bar filters the transaction list.
 The API currently does not expose recurring-expense or shared-expense routes.
 Those pages explain the limitation and do not save finance data in browser
 storage.
+
+Financial goals use the authenticated `/goals` API for listing, creation,
+editing, deletion, pause/resume, and contribution history. Goal and contribution
+lists load every page using `page` and `limit` with top-level `pagination`.
+API category, priority, status, and progress-status enums are mapped to UI labels.
+Starting savings are sent as `initialSavedAmount` only when creating a goal;
+later balance changes are recorded through contributions. Goal amounts and
+progress are refreshed from the server after contributions, never calculated
+as a replacement for persisted data. Existing browser-only sample goals are
+not imported or used as a fallback. The what-if planner and current plan
+suggestions remain local estimates, not AI-generated API recommendations.
 
 The profile page is accessible from both account identities and navigation.
 It shows the current account, without an account-switching action.
@@ -141,6 +166,18 @@ category charts. Daily spending uses a smooth gradient area chart with INR
 tooltips and day selection to open matching expenses. The month picker updates
 every section. Income remains a
 summary metric rather than an income-versus-expenses chart.
+The dashboard initially shows an AI invitation card without requesting a summary.
+Selecting **Generate insights** requests `POST /summaries/monthly` with
+`{ "month": "YYYY-MM" }` for the selected month and starts the AI loader.
+Changing the month or user resets the card to the invitation state.
+Its monthly insights card displays the API's
+`card.greeting`, `card.introduction`, and `card.insights`, with distinct trend,
+saving, and progress icons. It loads independently of finance records, offers
+retry on errors, and cancels outdated requests when the month or user changes.
+While waiting, an animated AI indicator and insight skeletons keep the card
+structured; polite status messages acknowledge longer waits without claiming
+measured progress. Animations respect reduced-motion preferences.
+AI-generated insights are labeled and do not replace the recorded summary totals.
 The Balance summary shows selected-month recorded income minus expenses,
 green when positive and red when negative. It is separate from the
 safe-to-spend estimate, which also reserves budget and recurring commitments.

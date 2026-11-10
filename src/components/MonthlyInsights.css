@@ -1,55 +1,249 @@
-.month-insights { display: grid; gap: var(--space-4); margin: var(--space-6) 0; }
-.insight-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); align-items: start; }
-.month-insights h3 { display: flex; align-items: center; gap: var(--space-2); }
-.month-insights h3 svg { color: var(--primary); flex-shrink: 0; }
-.month-insights .field-hint { line-height: 1.7; }
-.insight-main-value { display: block; font-size: var(--font-size-financial); margin: var(--space-3) 0 var(--space-4); }
-.insight-breakdown { display: grid; gap: var(--space-3); }
-.insight-breakdown > div { display: flex; justify-content: space-between; gap: var(--space-4); font-size: var(--font-size-caption); }
-.insight-breakdown dt { color: var(--muted); }
-.insight-breakdown dd { margin: 0; text-align: right; font-weight: var(--font-weight-medium); }
-.insight-details summary { color: var(--primary); cursor: pointer; font-size: var(--font-size-caption); }
-.insight-details p { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--font-size-caption); }
-.money-story { padding-left: var(--space-4); margin: 0; color: var(--muted); font-size: var(--font-size-secondary); line-height: 1.9; }
-.money-story li + li { margin-top: var(--space-3); }
-.money-story strong { color: var(--text); }
-.spending-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-1); }
-.calendar-weekday { padding: var(--space-1) 0; color: var(--muted); text-align: center; font-size: var(--font-size-caption); }
-.spending-day { min-height: 64px; display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-2); padding: var(--space-2) var(--space-1); border: 1px solid var(--border); border-radius: var(--radius-input); text-align: center; font-size: var(--font-size-caption); transition: box-shadow .18s; }
-.spending-day small { font-size: var(--font-size-caption); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
-.spending-day.heat-0 { background: var(--surface-muted); color: var(--muted); }
-.spending-day.heat-1 { background: var(--heat-low); color: var(--heat-text); }
-.spending-day.heat-2 { background: var(--heat-medium); color: var(--heat-text); }
-.spending-day.heat-3 { background: var(--heat-high); color: var(--heat-high-text); }
-.spending-day:hover { box-shadow: 0 0 0 2px var(--primary); }
-.spending-day[aria-current="date"] { border: 2px solid var(--primary); }
-.spending-alerts { display: grid; gap: var(--space-3); padding: 0; list-style: none; max-height: 400px; overflow-y: auto; }
-.spending-alerts li { padding: var(--space-3); background: var(--warning-soft); border: 1px solid var(--warning-border); border-radius: var(--radius-card); font-size: var(--font-size-caption); line-height: 1.7; }
-.spending-alerts p { margin: var(--space-1) 0 0; color: var(--muted); }
-.simulator-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .7fr); gap: var(--space-6); align-items: start; }
-.simulator-row { display: grid; gap: var(--space-2); margin-bottom: var(--space-4); font-size: var(--font-size-caption); }
-.simulator-row > span { display: flex; justify-content: space-between; gap: var(--space-2); }
-.simulator-row input { width: 100%; accent-color: var(--primary); }
-.simulator-row small { color: var(--muted); }
-.simulator-result { display: grid; gap: var(--space-3); padding: var(--space-6); border-radius: var(--radius-card); background: var(--primary-soft); font-size: var(--font-size-secondary); }
-.simulator-result > strong { font-size: var(--font-size-financial); overflow-wrap: anywhere; }
-.simulator-result p { margin: 0; }
-.simulator-result small { color: var(--muted); line-height: 1.7; }
-.quick-expense { margin-bottom: var(--space-6); }
-.quick-expense-controls { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0; }
-.quick-expense-controls input { flex: 1 1 220px; min-width: 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-card); color: var(--text); background: var(--surface); font-family: var(--font-family); font-size: var(--font-size-secondary); font-weight: var(--font-weight-regular); line-height: 1.5; }
-.quick-expense-controls input::placeholder { font-size: var(--font-size-caption); }
-.quick-expense-suggestions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
-.quick-expense-suggestions > span { color: var(--muted); font-size: var(--font-size-caption); }
-.quick-expense-suggestion { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3); border: 0; border-radius: var(--radius-badge); color: var(--text); background: var(--surface-muted); font: inherit; font-size: var(--font-size-caption); cursor: pointer; transition: background-color .18s ease, transform .18s ease; }
-.quick-expense-suggestion:hover { background: var(--primary-soft); transform: translateY(-1px); }
-.quick-expense-suggestion .ui-icon { color: var(--primary); }
-.quick-expense-suggestion small { color: var(--muted); font-size: inherit; font-variant-numeric: tabular-nums; }
-@media (max-width: 1150px) { .insight-grid { grid-template-columns: minmax(0, 1fr); } }
+.month-insights {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-6) 0;
+}
+
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.month-insights h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.month-insights h3 svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.month-insights .field-hint {
+  line-height: 1.7;
+}
+
+.insight-main-value {
+  display: block;
+  font-size: var(--font-size-financial);
+  margin: var(--space-3) 0 var(--space-4);
+}
+
+.insight-breakdown {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.insight-breakdown>div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--font-size-caption);
+}
+
+.insight-breakdown dt {
+  color: var(--muted);
+}
+
+.insight-breakdown dd {
+  margin: 0;
+  text-align: right;
+  font-weight: var(--font-weight-medium);
+}
+
+.insight-details summary {
+  color: var(--primary);
+  cursor: pointer;
+  font-size: var(--font-size-caption);
+}
+
+.insight-details p {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--font-size-caption);
+}
+
+.money-story {
+  padding-left: var(--space-4);
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--font-size-secondary);
+  line-height: 1.9;
+}
+
+.money-story li+li {
+  margin-top: var(--space-3);
+}
+
+.money-story strong {
+  color: var(--text);
+}
+
+.spending-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.calendar-weekday {
+  padding: var(--space-1) 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: var(--font-size-caption);
+}
+
+.spending-day {
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  text-align: center;
+  font-size: var(--font-size-caption);
+  transition: box-shadow .18s;
+}
+
+.spending-day small {
+  font-size: var(--font-size-caption);
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.spending-day.heat-0 {
+  background: var(--surface-muted);
+  color: var(--muted);
+}
+
+.spending-day.heat-1 {
+  background: var(--heat-low);
+  color: var(--heat-text);
+}
+
+.spending-day.heat-2 {
+  background: var(--heat-medium);
+  color: var(--heat-text);
+}
+
+.spending-day.heat-3 {
+  background: var(--heat-high);
+  color: var(--heat-high-text);
+}
+
+.spending-day:hover {
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.spending-day[aria-current="date"] {
+  border: 2px solid var(--primary);
+}
+
+.spending-alerts {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.spending-alerts li {
+  padding: var(--space-3);
+  background: var(--warning-soft);
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius-card);
+  font-size: var(--font-size-caption);
+  line-height: 1.7;
+}
+
+.spending-alerts p {
+  margin: var(--space-1) 0 0;
+  color: var(--muted);
+}
+
+.simulator-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, .7fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.simulator-row {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-caption);
+}
+
+.simulator-row>span {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.simulator-row input {
+  width: 100%;
+  accent-color: var(--primary);
+}
+
+.simulator-row small {
+  color: var(--muted);
+}
+
+.simulator-result {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border-radius: var(--radius-card);
+  background: var(--primary-soft);
+  font-size: var(--font-size-secondary);
+}
+
+.simulator-result>strong {
+  font-size: var(--font-size-financial);
+  overflow-wrap: anywhere;
+}
+
+.simulator-result p {
+  margin: 0;
+}
+
+.simulator-result small {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+@media (max-width: 1150px) {
+  .insight-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 640px) {
-  .simulator-layout { grid-template-columns: minmax(0, 1fr); }
-  .spending-calendar-grid { gap: var(--space-1); }
-  .spending-day { min-height: 58px; }
-  .spending-day small { font-size: var(--font-size-caption); }
-  .savings-simulator .card-heading { flex-wrap: wrap; gap: var(--space-3); }
+  .simulator-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .spending-calendar-grid {
+    gap: var(--space-1);
+  }
+
+  .spending-day {
+    min-height: 58px;
+  }
+
+  .spending-day small {
+    font-size: var(--font-size-caption);
+  }
+
+  .savings-simulator .card-heading {
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
 }

@@ -1,0 +1,39 @@
+.goal-form-page {
+  min-width: 0;
+}
+
+.goal-form-page > .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.goal-form-page .page-heading {
+  margin-bottom: var(--space-4);
+}
+
+.goal-form-page .page-title-icon {
+  color: var(--primary);
+}
+
+.goal-form-error {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  padding: var(--space-6);
+}
+
+.goal-form-error > svg {
+  color: var(--warning);
+}
+
+.goal-form-error h3,
+.goal-form-error p {
+  margin: 0;
+}
+
+.goal-form-error p {
+  margin-bottom: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
+}
