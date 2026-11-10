@@ -69,6 +69,13 @@ function DashboardPage() {
   const comparisonDays = isCurrentMonth ? Math.min(days, new Date(year, monthNumber - 1, 0).getDate()) : new Date(year, monthNumber - 1, 0).getDate();
   const monthlyExpenses = expenses.filter((expense) => expense.date.startsWith(month));
   const total = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const savingsCategoryIds = new Set(categories
+    .filter((category) => ["saving", "savings"].includes(category.name.trim().toLowerCase()))
+    .map((category) => category.id));
+  const savingsTotal = monthlyExpenses
+    .filter((expense) => savingsCategoryIds.has(expense.categoryId)
+      || ["saving", "savings"].includes(expense.categoryName.trim().toLowerCase()))
+    .reduce((sum, expense) => sum + expense.amount, 0);
   const incomeTotal = incomes.filter((income) => income.date.startsWith(month)).reduce((sum, income) => sum + income.amount, 0);
   const previousTotal = expenses.filter((expense) => expense.date.startsWith(previousMonth) && Number(expense.date.slice(8, 10)) <= comparisonDays).reduce((sum, expense) => sum + expense.amount, 0);
   const spendingChange = previousTotal ? (total - previousTotal) / previousTotal * 100 : null;
@@ -97,6 +104,17 @@ function DashboardPage() {
   ).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
   const visible = showAll ? matching : matching.slice(0, 5);
   const dateQuery = `from=${toDateKey(monthStart)}&to=${toDateKey(monthEnd)}`;
+  const monthlyExpensesUrl = `/app/expenses?${dateQuery}#expense-list`;
+  const savingsCategory = categories.find((category) => ["saving", "savings"].includes(category.name.trim().toLowerCase()));
+  const savingsCategoryId = savingsCategory?.id ?? monthlyExpenses.find((expense) =>
+    ["saving", "savings"].includes(expense.categoryName.trim().toLowerCase()),
+  )?.categoryId;
+  const savingsParams = new URLSearchParams(dateQuery);
+  if (savingsCategoryId) savingsParams.set("category", savingsCategoryId);
+  const savingsUrl = `/app/expenses?${savingsParams.toString()}#expense-list`;
+  const topCategoryParams = new URLSearchParams(dateQuery);
+  if (topCategory) topCategoryParams.set("category", topCategory.id);
+  const topCategoryUrl = `/app/expenses?${topCategoryParams.toString()}#expense-list`;
 
   function selectMonth(value: string) {
     if (!/^\d{4}-\d{2}$/.test(value) || Number(value.slice(0, 4)) < 1000 || Number(value.slice(5)) < 1 || Number(value.slice(5)) > 12) return;
@@ -147,18 +165,18 @@ function DashboardPage() {
       </aside>
 
       <section className="summary-grid dashboard-summary" aria-label={`${monthLabel} summary`} aria-busy={loading}>
-        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone="income" label="Income" value={formatCurrency(incomeTotal)} detail="Received this month" icon="income" tone="green" valueTone="income" />
-        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone="expense" label="Monthly spending" value={formatCurrency(total)} detail={changeDetail} icon="expense" tone="red" valueTone="expense" detailTone={previousTotal && total !== previousTotal ? total > previousTotal ? "negative" : "positive" : undefined} />
-        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone={incomeTotal >= total ? "income" : "expense"} label="Balance" value={formatCurrency(incomeTotal - total)} detail="Monthly income minus expenses" icon="wallet" tone={incomeTotal >= total ? "green" : "red"} valueTone={incomeTotal === total ? undefined : incomeTotal > total ? "positive" : "negative"} />
-        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone="purple" label="Transactions" value={String(monthlyExpenses.length)} detail="Expenses this month" icon="transactions" tone="purple" />
-        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone="expense" label="Daily average" value={formatCurrency(total / days)} detail={`${days} days in period`} icon="clock" tone="red" valueTone="expense" />
-        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone="warning" label="Top category" value={topCategory?.name ?? "No spending"} detail={topCategory ? `${formatCurrency(topCategory.total)} this month` : "Add your first expense"} icon="categories" tone="orange" detailTone={topCategory ? "expense" : undefined} />
+        <SummaryCard animateValue to={!loading && !loadError ? `/app/income?${dateQuery}` : undefined} loading={loading} unavailable={!!loadError} surfaceTone="income" label="Income" value={formatCurrency(incomeTotal)} detail="Received this month" icon="income" tone="green" valueTone="income" />
+        <SummaryCard animateValue to={!loading && !loadError ? monthlyExpensesUrl : undefined} loading={loading} unavailable={!!loadError} surfaceTone="expense" label="Monthly spending" value={formatCurrency(total)} detail={changeDetail} icon="expense" tone="red" valueTone="expense" detailTone={previousTotal && total !== previousTotal ? total > previousTotal ? "negative" : "positive" : undefined} />
+        <SummaryCard animateValue to={!loading && !loadError ? "/app/reports" : undefined} loading={loading} unavailable={!!loadError} surfaceTone={incomeTotal >= total ? "income" : "expense"} label="Balance" value={formatCurrency(incomeTotal - total)} detail="Monthly income minus expenses" icon="wallet" tone={incomeTotal >= total ? "green" : "red"} valueTone={incomeTotal === total ? undefined : incomeTotal > total ? "positive" : "negative"} />
+        <SummaryCard animateValue to={!loading && !loadError ? savingsUrl : undefined} loading={loading} unavailable={!!loadError} surfaceTone="income" label="Savings" value={formatCurrency(savingsTotal)} detail="Saving category this month" icon="wallet" tone="green" valueTone="positive" />
+        <SummaryCard animateValue to={!loading && !loadError ? monthlyExpensesUrl : undefined} loading={loading} unavailable={!!loadError} surfaceTone="purple" label="Transactions" value={String(monthlyExpenses.length)} detail="Expenses this month" icon="transactions" tone="purple" />
+        <SummaryCard to={!loading && !loadError ? topCategoryUrl : undefined} loading={loading} unavailable={!!loadError} surfaceTone="warning" label="Top category" value={topCategory?.name ?? "No spending"} detail={topCategory ? `${formatCurrency(topCategory.total)} this month` : "Add your first expense"} icon="categories" tone="orange" detailTone={topCategory ? "expense" : undefined} />
       </section>
 
       <MonthlyAiSummary key={`${userId}-${month}`} month={month} />
       <QuickExpense />
       {loadError && <div className="inline-error" role="alert">{loadError}<button className="button button-secondary" onClick={() => { setLoading(true); setReload((value) => value + 1); }}>Retry</button></div>}
-      {loading && <p role="status">Loading your finance data…</p>}
+      {loading && <p className="sr-only" role="status">Loading your finance data…</p>}
       <section className="content-card dashboard-activity" aria-labelledby="dashboard-activity-title">
         <div className="card-heading">
           <div><h3 id="dashboard-activity-title">Recent transactions <span className="activity-count">{matching.length}</span></h3><p>{selectedDate ? `Showing expenses for ${formatDate(selectedDate)}` : `Explore your expenses for ${monthLabel}. Select a transaction for a quick preview.`}{categoryId ? ` · ${categories.find((category) => category.id === categoryId)?.name ?? "Selected category"}` : ""}</p></div>
@@ -171,7 +189,7 @@ function DashboardPage() {
           </select>
           {(search || categoryId || selectedDate) && <button className="reset-button" onClick={() => { setSearch(""); setCategoryId(""); setSelectedDate(""); setShowAll(false); }}><Icon name="reset" size={14} />Clear</button>}
         </div>
-        <div className="activity-list">
+        <div className="activity-list" key={`${search.trim().toLowerCase()}-${categoryId}-${selectedDate}-${showAll}`}>
           {visible.map((expense) => {
             const category = categories.find((item) => item.id === expense.categoryId);
             const expanded = expense.id === expandedId;

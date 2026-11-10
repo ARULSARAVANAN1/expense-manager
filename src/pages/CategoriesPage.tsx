@@ -107,7 +107,7 @@ function CategoriesPage() {
       <PageHeader title="Categories" subtitle="Organize your income and spending." />
       {notice && <div className="toast-message" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss notification">×</button></div>}
       {error && <div className="inline-error" role="alert">{error}</div>}
-      {loading && <p role="status">Loading categories…</p>}
+      {loading && <p className="sr-only" role="status">Loading categories…</p>}
       <div className="management-layout">
         <section className="content-card">
           <div className="card-heading"><div><h3>Your categories</h3><p>Categories in use cannot be removed to preserve transaction history.</p></div></div>

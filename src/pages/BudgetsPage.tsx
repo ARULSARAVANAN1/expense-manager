@@ -77,7 +77,7 @@ function BudgetsPage() {
       <PageHeader title="Budgets" subtitle="Set monthly category limits and keep an eye on your spending." />
       {notice && <div className="toast-message" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss notification">×</button></div>}
       {error && <div className="inline-error" role="alert">{error}</div>}
-      {loading && <p role="status">Loading budgets…</p>}
+      {loading && <p className="sr-only" role="status">Loading budgets…</p>}
       <section className="summary-grid summary-grid-three">
         <SummaryCard label="Monthly budget" value={formatCurrency(totalBudget)} detail={`For ${currentMonth}`} icon="budget" tone="blue" />
         <SummaryCard label="Spent this month" value={formatCurrency(totalSpent)} detail="Across all categories" icon="expense" tone="red" valueTone="expense" />

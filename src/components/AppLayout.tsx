@@ -32,6 +32,10 @@ function AppLayout() {
   const dateValue = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
 
   useEffect(() => {
+    if (!location.hash) window.scrollTo(0, 0);
+  }, [location.hash, location.pathname]);
+
+  useEffect(() => {
     const now = new Date();
     const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     const timer = window.setTimeout(() => setCurrentDate(new Date()), midnight.getTime() - now.getTime());
@@ -159,7 +163,9 @@ function AppLayout() {
             </details>
           </div>
         </header>
-        <main id="main-content" className="page-content" tabIndex={-1}><Outlet /></main>
+        <main id="main-content" className="page-content" tabIndex={-1}>
+          <div className="page-transition" key={location.pathname}><Outlet /></div>
+        </main>
       </div>
     </div>
   );

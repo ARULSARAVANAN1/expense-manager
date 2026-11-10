@@ -1,5 +1,6 @@
 import DatePicker from "../components/DatePicker";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import Icon from "../components/Icon";
 import SummaryCard from "../components/SummaryCard";
@@ -12,13 +13,14 @@ import { getCategoryStyle } from "../utils.ts/category-style";
 function IncomePage() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
+  const [searchParams] = useSearchParams();
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [accounts, setAccounts] = useState<ExpenseAccount[]>([]);
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [from, setFrom] = useState(searchParams.get("from") ?? "");
+  const [to, setTo] = useState(searchParams.get("to") ?? "");
   const [editing, setEditing] = useState<Income | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [deleting, setDeleting] = useState<Income | null>(null);
@@ -114,7 +116,7 @@ function IncomePage() {
       <PageHeader title="Income" subtitle="Record and review the money coming in." action={<button className="button button-primary" onClick={() => { resetForm(); setFormOpen(true); }}><Icon name="plus" />Add income</button>} />
       {notice && <div className="toast-message" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss notification">×</button></div>}
       {error && !editing && <div className="inline-error" role="alert">{error}</div>}
-      {loading && <p role="status">Loading income…</p>}
+      {loading && <p className="sr-only" role="status">Loading income…</p>}
       <section className="summary-grid summary-grid-three">
         <SummaryCard label="Income this month" value={formatCurrency(currentMonthTotal)} detail="Across all income sources" icon="↗" tone="green" valueTone="income" />
         <SummaryCard label="Filtered income" value={formatCurrency(total)} detail="Matching records" icon="₹" tone="green" valueTone="income" />

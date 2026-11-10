@@ -201,6 +201,7 @@
 .simulator-row input {
   width: 100%;
   accent-color: var(--primary);
+  cursor: pointer;
 }
 
 .simulator-row small {

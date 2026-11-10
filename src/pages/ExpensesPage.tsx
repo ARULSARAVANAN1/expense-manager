@@ -102,7 +102,7 @@ function ExpensesPage() {
       <PageHeader title="Expenses" subtitle="Track and manage your spending." action={<div className="header-actions"><Link className="button button-secondary" to="/app/recurring"><Icon name="clock" />Recurring</Link><Link className="button button-primary" to="/app/expenses/new"><Icon name="plus" />Add expense</Link></div>} />
       {toast && <div className="toast-message" role="status">{toast}<button onClick={() => setToast("")} aria-label="Dismiss notification">×</button></div>}
       {error && <div className="inline-error" role="alert">{error}</div>}
-      {loading && <p role="status">Loading expenses…</p>}
+      {loading && <p className="sr-only" role="status">Loading expenses…</p>}
       <section className="summary-grid summary-grid-three">
         <SummaryCard label="Total expenses" value={formatCurrency(total)} detail="Across filtered transactions" icon="↘" tone="red" valueTone="expense" />
         <SummaryCard label="Transactions" value={String(filtered.length)} detail="Matching transactions" icon="⇄" tone="purple" />
@@ -110,7 +110,7 @@ function ExpensesPage() {
       </section>
       <section className="content-card expenses-category-chart" aria-labelledby="expenses-category-title">
         <div className="card-heading"><div><h3 id="expenses-category-title">Spending by category</h3><p>Category breakdown across all expenses</p></div></div>
-        {loading ? <p role="status">Loading category spending…</p> : error ? <p className="field-hint">Category spending is unavailable.</p> : <CategoryDonutChart expenses={expenses} categories={categories} onSelect={(id) => {
+        {loading ? <div className="expenses-category-loading" role="status"><span className="sr-only">Loading category spending…</span></div> : error ? <p className="field-hint">Category spending is unavailable.</p> : <CategoryDonutChart expenses={expenses} categories={categories} onSelect={(id) => {
           setCategory(id);
           setPage(1);
           document.getElementById("expense-list")?.scrollIntoView({ block: "start" });

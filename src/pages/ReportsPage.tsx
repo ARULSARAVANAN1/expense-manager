@@ -192,7 +192,7 @@ function ReportsPage() {
       <PageHeader title="Reports & Insights" subtitle="Understand where your money goes." action={<div className="header-actions"><select className="select-control period-select" aria-label="Select report date range" value={period} onChange={(event) => setPeriod(event.target.value)}><option value="7days">Last 7 days</option><option value="month">This month</option><option value="lastmonth">Last month</option><option value="3months">Last 3 months</option><option value="6months">Last 6 months</option><option value="year">This year</option><option value="custom">Custom range</option></select><button className="button button-secondary" type="button" onClick={exportReport} disabled={loading}><Icon name="save" size={16} />Export Excel</button></div>} />
       {error && <div className="inline-error" role="alert">{error}</div>}
       {exportError && <div className="inline-error" role="alert">{exportError}</div>}
-      {loading && <p role="status">Loading report data…</p>}
+      {loading && <p className="sr-only" role="status">Loading report data…</p>}
       {period === "custom" && <div className="custom-date-range"><label>From <DatePicker type="date" value={customFrom} onChange={(value) => setCustomFrom(value)} /></label><label>To <DatePicker type="date" value={customTo} onChange={(value) => setCustomTo(value)} /></label></div>}
       <section className="summary-grid">
         <SummaryCard label="Total expenses" value={formatCurrency(total)} detail="For selected period" icon="↘" tone="red" valueTone="expense" />

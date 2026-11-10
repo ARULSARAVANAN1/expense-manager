@@ -61,7 +61,7 @@ function AccountsPage() {
       <PageHeader title="Accounts" subtitle="Manage the accounts and payment methods used for transactions." />
       {notice && <div className="toast-message" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss notification">×</button></div>}
       {error && <div className="inline-error" role="alert">{error}</div>}
-      {loading && <p role="status">Loading accounts…</p>}
+      {loading && <p className="sr-only" role="status">Loading accounts…</p>}
       <div className="management-layout">
         <section className="content-card"><div className="card-heading"><div><h3>Accounts & payment methods</h3><p>Accounts linked to transactions are protected from deletion.</p></div></div>
           <div className="manage-list">{accounts.map((account) => {
