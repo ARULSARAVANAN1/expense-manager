@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import type { Budget, Expense, ExpenseCategory, Income } from "../types/expense";
 import { monthlyInsights, monthDays } from "../utils.ts/insights";
@@ -12,9 +12,10 @@ interface Props {
   incomes: Income[];
   categories: ExpenseCategory[];
   budgets: Budget[];
+  children?: ReactNode;
 }
 
-export default function MonthlyInsights({ month, expenses, incomes, categories, budgets }: Props) {
+export default function MonthlyInsights({ month, expenses, incomes, categories, budgets, children }: Props) {
   const [reductions, setReductions] = useState<Record<string, number>>({});
   const insight = monthlyInsights(month, expenses, incomes, budgets, categories);
   const [year, number] = month.split("-").map(Number);
@@ -25,6 +26,12 @@ export default function MonthlyInsights({ month, expenses, incomes, categories, 
   const savings = insight.categoryTotals.reduce((sum, item) => sum + Math.round(item.spent * (reductions[item.id] ?? 0)) / 100, 0);
   const label = new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(new Date(year, number - 1, 1));
   const current = month === toDateKey(new Date()).slice(0, 7);
+  const calendarAmountFormatter = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  });
   return <section className="month-insights" aria-label={`${label} insights`}>
     <div className="insight-grid">
       <article className="content-card safe-spend-card">
@@ -47,7 +54,6 @@ export default function MonthlyInsights({ month, expenses, incomes, categories, 
         </ul> : <div className="empty-state"><h3>Your story starts with an expense</h3><p>Add transactions for {label} to see your recap.</p></div>}
       </article>
     </div>
-    <div className="insight-grid">
       <article className="content-card spending-calendar">
         <div className="card-heading"><div><h3><Icon name="clock" />Spending calendar</h3><p>{label}. Select a day to view its expenses.</p></div></div>
         <div className="spending-calendar-grid">
@@ -57,16 +63,13 @@ export default function MonthlyInsights({ month, expenses, incomes, categories, 
             const date = `${month}-${String(index + 1).padStart(2, "0")}`;
             const amount = totals.get(date) ?? 0;
             const heat = !amount ? 0 : amount / peak > 0.66 ? 3 : amount / peak > 0.33 ? 2 : 1;
-            return <Link key={date} to={`/app/expenses?from=${date}&to=${date}`} className={`spending-day heat-${heat}`} aria-label={`${formatDate(date)}: ${formatCurrency(amount)}. View expenses.`} aria-current={date === toDateKey(new Date()) ? "date" : undefined}><span>{index + 1}</span><small>{amount ? formatCurrency(amount) : "-"}</small></Link>;
+            const displayAmount = amount >= 1000 ? `${calendarAmountFormatter.format(amount / 1000)}k` : amount ? formatCurrency(amount) : "-";
+            return <Link key={date} to={`/app/expenses?from=${date}&to=${date}`} className={`spending-day heat-${heat}`} data-tooltip-id="app-tooltip" data-tooltip-content={`${formatDate(date)}: ${formatCurrency(amount)}`} aria-label={`${formatDate(date)}: ${formatCurrency(amount)}. View expenses.`} aria-current={date === toDateKey(new Date()) ? "date" : undefined}><span>{index + 1}</span><small>{displayAmount}</small></Link>;
           })}
         </div>
         <p className="field-hint">Lighter to darker green = lower to higher daily spending relative to this month's peak. Amounts are shown on every spending day.</p>
       </article>
-      <article className="content-card">
-        <div className="card-heading"><div><h3><Icon name="warning" />Smart spending alerts</h3><p>Transparent rules based on this month's records.</p></div></div>
-        {insight.alerts.length ? <ul className="spending-alerts">{insight.alerts.map((alert) => <li key={alert.id}><strong data-finance-tone={alert.tone}>{alert.title}</strong><p>{alert.detail}</p></li>)}</ul> : <div className="empty-state"><h3>{insight.monthly.length ? "No rules triggered" : "Not enough activity yet"}</h3><p>Alerts appear at 80% budget usage, category increases of at least 50% against a prior baseline of INR 500, or unusually large transactions with at least 5 monthly records.</p></div>}
-      </article>
-    </div>
+    {children}
     <article className="content-card savings-simulator">
       <div className="card-heading"><div><h3><Icon name="budget" />What-if savings simulator</h3><p>Adjust category spending for {label}. This experiment never changes expenses or budgets.</p></div><button className="reset-button" onClick={() => setReductions({})}>Reset scenario</button></div>
       {insight.categoryTotals.length ? <>

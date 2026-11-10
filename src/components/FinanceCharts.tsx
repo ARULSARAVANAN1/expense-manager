@@ -161,6 +161,19 @@ export function CategoryDonutChart({ expenses, categories = expenseCategories, o
   })).filter((category) => category.amount > 0).sort((a, b) => b.amount - a.amount);
   const total = amounts.reduce((sum, category) => sum + category.amount, 0);
   const activeCategory = amounts.find((category) => category.id === activeId);
+  const centerAmount = activeCategory?.amount ?? total;
+  const thousandsFormatter = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  });
+  const formatCategoryAmount = (amount: number) => amount >= 1000
+    ? `${thousandsFormatter.format(amount / 1000)}k`
+    : formatCurrency(amount);
+  const centerValue = activeCategory || total > 9999
+    ? formatCategoryAmount(centerAmount)
+    : formatCurrency(total);
 
   if (!amounts.length) {
     return <div className="empty-state"><span><Icon name="budget" size={24} /></span><h3>No spending yet</h3><p>Category insights will appear when you add expenses for this period.</p></div>;
@@ -183,21 +196,22 @@ export function CategoryDonutChart({ expenses, categories = expenseCategories, o
         </ResponsiveContainer>
         <div className="donut-center">
           <span>{activeCategory?.name ?? "Total spending"}</span>
-          <strong data-finance-tone="expense">{formatCurrency(activeCategory?.amount ?? total)}</strong>
-          <small>{activeCategory ? `${(activeCategory.amount / total * 100).toFixed(1)}% of total` : `${amounts.length} spending categories`}</small>
+          <strong data-finance-tone="expense" tabIndex={0} data-tooltip-id="app-tooltip" data-tooltip-content={formatCurrency(centerAmount)} aria-label={formatCurrency(centerAmount)}>{centerValue}</strong>
+          {activeCategory && <small>{`${(activeCategory.amount / total * 100).toFixed(1)}% of total`}</small>}
         </div>
       </div>
       <p className="category-interaction-hint"><Icon name="search" size={14} />{onSelect ? "Hover to explore · Select a category to view transactions" : "Hover to explore your spending"}</p>
       <div className="category-legend">
         {amounts.map((category) => (
           <button type="button" className={`category-legend-row${activeId === category.id ? " is-highlighted" : ""}`} key={category.id}
+            data-tooltip-id="app-tooltip" data-tooltip-content={`${category.name}: ${formatCurrency(category.amount)}`}
             onMouseEnter={() => setActiveId(category.id)} onMouseLeave={() => setActiveId(null)}
             onFocus={() => setActiveId(category.id)} onBlur={() => setActiveId(null)}
             aria-label={`${category.name}: ${formatCurrency(category.amount)}, ${(category.amount / total * 100).toFixed(1)}% of spending${onSelect ? ". View transactions" : ""}`}
             onClick={() => onSelect?.(category.id)}>
             <span className="legend-category-icon" style={getCategoryStyle(category)}><Icon name={category.icon} size={19} /></span>
             <span className="category-row-content">
-              <span className="category-row-heading"><span className="legend-name">{category.name}</span><strong>{formatCurrency(category.amount)}</strong></span>
+              <span className="category-row-heading"><span className="legend-name">{category.name}</span><strong>{formatCategoryAmount(category.amount)}</strong></span>
               <span className="category-share-track"><span style={{ width: `${category.amount / total * 100}%`, backgroundColor: getCategoryColor(category) }} /></span>
               <span className="category-row-meta"><span>{category.count} transaction{category.count === 1 ? "" : "s"}</span><small>{(category.amount / total * 100).toFixed(1)}%</small></span>
             </span>

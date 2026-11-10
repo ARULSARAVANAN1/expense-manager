@@ -6,6 +6,7 @@ import Icon from "../components/Icon";
 import LoadingButton from "../components/LoadingButton";
 import SummaryCard from "../components/SummaryCard";
 import ExpenseAnalysis from "../components/ExpenseAnalysis";
+import { CategoryDonutChart } from "../components/FinanceCharts";
 import { useAuth } from "../contexts/AuthContext";
 import { deleteExpense, getExpenses } from "../services/expense.service";
 import { getAccounts, getCategories } from "../services/finance-data.service";
@@ -54,6 +55,12 @@ function ExpensesPage() {
     return () => { active = false; };
   }, [userId]);
 
+  useEffect(() => {
+    if (!loading && location.hash === "#expense-list") {
+      document.getElementById("expense-list")?.scrollIntoView({ block: "start" });
+    }
+  }, [loading, location.hash]);
+
   const contextualExpenses = expenses.filter((expense) => {
     const query = search.trim().toLowerCase();
     return (!query || expense.description.toLowerCase().includes(query) || (expense.notes ?? "").toLowerCase().includes(query))
@@ -101,8 +108,16 @@ function ExpensesPage() {
         <SummaryCard label="Transactions" value={String(filtered.length)} detail="Matching transactions" icon="⇄" tone="purple" />
         <SummaryCard label="Average expense" value={formatCurrency(filtered.length ? total / filtered.length : 0)} detail="Per transaction" icon="◷" tone="red" valueTone="expense" />
       </section>
-      <ExpenseAnalysis expenses={contextualExpenses} onSelect={(start, end) => { setFrom(start); setTo(end); setPage(1); }} />
-      <section className="content-card expenses-list-card">
+      <section className="content-card expenses-category-chart" aria-labelledby="expenses-category-title">
+        <div className="card-heading"><div><h3 id="expenses-category-title">Spending by category</h3><p>Category breakdown across all expenses</p></div></div>
+        {loading ? <p role="status">Loading category spending…</p> : error ? <p className="field-hint">Category spending is unavailable.</p> : <CategoryDonutChart expenses={expenses} categories={categories} onSelect={(id) => {
+          setCategory(id);
+          setPage(1);
+          document.getElementById("expense-list")?.scrollIntoView({ block: "start" });
+        }} />}
+      </section>
+      <ExpenseAnalysis expenses={expenses} onSelect={(start, end) => { setFrom(start); setTo(end); setPage(1); }} />
+      <section id="expense-list" className="content-card expenses-list-card">
         <div className="filter-toolbar">
           <label className="search-field"><Icon name="search" /><input aria-label="Search expenses" placeholder="Search expenses..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></label>
           <select className="select-control" aria-label="Filter by category" value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>

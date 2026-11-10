@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import SummaryCard from "../components/SummaryCard";
+import Icon from "../components/Icon";
 import { CategoryDonutChart, ExpenseTrendChart, FinanceTooltip, TopCategoriesChart } from "../components/FinanceCharts";
 import { useAuth } from "../contexts/AuthContext";
 import { getExpenses } from "../services/expense.service";
@@ -11,6 +12,7 @@ import type { Expense } from "../types/expense";
 import { formatCompactCurrency, formatCurrency, formatDate, toDateKey } from "../utils.ts/finance";
 import { getCategories, getIncomes } from "../services/finance-data.service";
 import type { ExpenseCategory, Income } from "../types/expense";
+import { createExcelWorkbook } from "../utils.ts/excel-export";
 
 function ReportsPage() {
   const { user } = useAuth();
@@ -21,6 +23,7 @@ function ReportsPage() {
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [exportError, setExportError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -81,10 +84,114 @@ function ReportsPage() {
     setSelectedDay("");
   }
 
+  function selectCategory(id: string) {
+    const params = new URLSearchParams({ category: id });
+    if (startDate) params.set("from", startDate);
+    if (endDate) params.set("to", endDate);
+    navigate(`/app/expenses?${params.toString()}#expense-list`);
+  }
+
+  function exportReport() {
+    try {
+      const allExpenseTotal = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+      const allIncomeTotal = incomes.reduce((sum, income) => sum + income.amount, 0);
+      const workbook = createExcelWorkbook([
+        {
+          name: "Summary",
+          columnWidths: [36, 34],
+          currencyRows: [2, 3, 4, 8, 9],
+          rows: [
+            ["Report summary", "Value"],
+            ["Included transactions", "All records"],
+            ["All-time expenses", allExpenseTotal],
+            ["All-time income", allIncomeTotal],
+            ["All-time net income", allIncomeTotal - allExpenseTotal],
+            ["All-time expense transactions", expenses.length],
+            ["All-time income transactions", incomes.length],
+            ["Selected report period", `${startDate || "All dates"} to ${endDate || "All dates"}`],
+            ["Total expenses", total],
+            ["Total income", periodIncomes.reduce((sum, income) => sum + income.amount, 0)],
+            ["Expense transactions", periodExpenses.length],
+            ["Income transactions", periodIncomes.length],
+          ],
+        },
+        {
+          name: "Expenses",
+          columnWidths: [16, 34, 18, 24, 24, 42, 22, 22],
+          dateColumns: [0],
+          dateTimeColumns: [6, 7],
+          currencyColumns: [2],
+          rows: [
+            ["Date", "Description", "Amount", "Category", "Account", "Notes", "Created at", "Updated at"],
+            ...[...expenses]
+              .sort((a, b) => b.date.localeCompare(a.date))
+              .map((expense) => [
+                expense.date,
+                expense.description,
+                expense.amount,
+                expense.categoryName,
+                expense.accountName ?? "",
+                expense.notes ?? "",
+                expense.createdAt,
+                expense.updatedAt,
+              ]),
+          ],
+        },
+        {
+          name: "Income",
+          columnWidths: [16, 34, 18, 24, 24, 42, 22, 22],
+          dateColumns: [0],
+          dateTimeColumns: [6, 7],
+          currencyColumns: [2],
+          rows: [
+            ["Date", "Description", "Amount", "Category", "Account", "Notes", "Created at", "Updated at"],
+            ...[...incomes]
+              .sort((a, b) => b.date.localeCompare(a.date))
+              .map((income) => [
+                income.date,
+                income.description,
+                income.amount,
+                income.categoryName,
+                income.accountName ?? "",
+                income.notes ?? "",
+                income.createdAt,
+                income.updatedAt,
+              ]),
+          ],
+        },
+      ]);
+      const workbookBuffer = new ArrayBuffer(workbook.byteLength);
+      new Uint8Array(workbookBuffer).set(workbook);
+      const blob = new Blob([workbookBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const selectedTimeRange = period === "custom"
+        ? `${customFrom || "start"}-to-${customTo || "end"}`
+        : ({
+          "7days": "last-7-days",
+          month: "this-month",
+          lastmonth: "last-month",
+          "3months": "last-3-months",
+          "6months": "last-6-months",
+          year: "this-year",
+        }[period] ?? "selected-range");
+      link.download = `expense-report-${selectedTimeRange}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setExportError("");
+    } catch (exportError: unknown) {
+      setExportError(exportError instanceof Error ? exportError.message : "Unable to export the report.");
+    }
+  }
+
   return (
     <>
-      <PageHeader title="Reports & Insights" subtitle="Understand where your money goes." action={<div className="header-actions"><select className="select-control period-select" aria-label="Select report date range" value={period} onChange={(event) => setPeriod(event.target.value)}><option value="7days">Last 7 days</option><option value="month">This month</option><option value="lastmonth">Last month</option><option value="3months">Last 3 months</option><option value="6months">Last 6 months</option><option value="year">This year</option><option value="custom">Custom range</option></select></div>} />
+      <PageHeader title="Reports & Insights" subtitle="Understand where your money goes." action={<div className="header-actions"><select className="select-control period-select" aria-label="Select report date range" value={period} onChange={(event) => setPeriod(event.target.value)}><option value="7days">Last 7 days</option><option value="month">This month</option><option value="lastmonth">Last month</option><option value="3months">Last 3 months</option><option value="6months">Last 6 months</option><option value="year">This year</option><option value="custom">Custom range</option></select><button className="button button-secondary" type="button" onClick={exportReport} disabled={loading}><Icon name="save" size={16} />Export Excel</button></div>} />
       {error && <div className="inline-error" role="alert">{error}</div>}
+      {exportError && <div className="inline-error" role="alert">{exportError}</div>}
       {loading && <p role="status">Loading report data…</p>}
       {period === "custom" && <div className="custom-date-range"><label>From <DatePicker type="date" value={customFrom} onChange={(value) => setCustomFrom(value)} /></label><label>To <DatePicker type="date" value={customTo} onChange={(value) => setCustomTo(value)} /></label></div>}
       <section className="summary-grid">
@@ -96,8 +203,8 @@ function ReportsPage() {
       </section>
       <section className="charts-grid reports-charts">
         <article className="content-card"><div className="card-heading"><div><h3>Monthly expense trend</h3><p>Choose a month to filter transactions</p></div></div><div className="trend-chart"><ExpenseTrendChart expenses={periodExpenses} onSelect={selectTrendMonth} /></div></article>
-        <article className="content-card"><div className="card-heading"><div><h3>Category breakdown</h3><p>Click a category to filter report activity</p></div></div><CategoryDonutChart expenses={periodExpenses} categories={categories} onSelect={(id) => { setSelectedCategory(selectedCategory === id ? "" : id); setSelectedDay(""); }} /></article>
-        <article className="content-card"><div className="card-heading"><div><h3>Top spending categories</h3><p>Highest spending categories</p></div></div><TopCategoriesChart expenses={periodExpenses} categories={categories} onSelect={(id) => setSelectedCategory(selectedCategory === id ? "" : id)} /></article>
+        <article className="content-card"><div className="card-heading"><div><h3>Category breakdown</h3><p>Spending by category for the selected period</p></div></div><CategoryDonutChart expenses={periodExpenses} categories={categories} onSelect={selectCategory} /></article>
+        <article className="content-card"><div className="card-heading"><div><h3>Top spending categories</h3><p>Highest spending categories</p></div></div><TopCategoriesChart expenses={periodExpenses} categories={categories} onSelect={selectCategory} /></article>
         <article className="content-card"><div className="card-heading"><div><h3>Daily spending pattern</h3><p>Daily totals across the selected period</p></div></div><div className="daily-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={dailyData} margin={{ top: 8, right: 8, left: 3, bottom: 0 }}><CartesianGrid stroke="var(--chart-grid)" vertical={false} /><XAxis dataKey="label" axisLine={false} tickLine={false} tickMargin={8} minTickGap={22} interval="preserveStartEnd" tick={{ fill: "var(--chart-axis)", fontSize: 12 }} /><YAxis width={64} axisLine={false} tickLine={false} tickMargin={7} tickFormatter={(value: number) => formatCompactCurrency(value)} tick={{ fill: "var(--chart-axis)", fontSize: 12 }} /><Tooltip content={FinanceTooltip} cursor={{ fill: "var(--primary-soft)", opacity: 0.65 }} /><Bar dataKey="amount" name="Expenses" fill="var(--primary)" radius={[4, 4, 0, 0]} onClick={(data) => { const item = data as unknown as { date?: string; payload?: { date?: string } }; const day = item.date ?? item.payload?.date; if (day) setSelectedDay(selectedDay === day ? "" : day); }} /></BarChart></ResponsiveContainer></div></article>
       </section>
       <section className="content-card recent-card">

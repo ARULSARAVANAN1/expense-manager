@@ -1,6 +1,6 @@
 import DatePicker from "../components/DatePicker";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
 import SummaryCard from "../components/SummaryCard";
@@ -18,6 +18,7 @@ import { getCategoryStyle } from "../utils.ts/category-style";
 
 function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const userId = user?.id ?? "";
   const [month, setMonth] = useState(() => toDateKey(new Date()).slice(0, 7));
   const [search, setSearch] = useState("");
@@ -111,11 +112,8 @@ function DashboardPage() {
   }
 
   function selectCategory(id: string) {
-    setCategoryId(id);
-    setSelectedDate("");
-    setExpandedId(null);
-    setShowAll(false);
-    document.getElementById("dashboard-activity-title")?.scrollIntoView({ block: "start" });
+    const params = new URLSearchParams({ category: id, from: toDateKey(monthStart), to: toDateKey(monthEnd) });
+    navigate(`/app/expenses?${params.toString()}#expense-list`);
   }
 
   function selectDate(date: string) {
@@ -149,12 +147,12 @@ function DashboardPage() {
       </aside>
 
       <section className="summary-grid dashboard-summary" aria-label={`${monthLabel} summary`} aria-busy={loading}>
-        <SummaryCard loading={loading} unavailable={!!loadError} label="Monthly spending" value={formatCurrency(total)} detail={changeDetail} icon="expense" tone="red" valueTone="expense" detailTone={previousTotal && total !== previousTotal ? total > previousTotal ? "negative" : "positive" : undefined} featured />
-        <SummaryCard loading={loading} unavailable={!!loadError} label="Income" value={formatCurrency(incomeTotal)} detail="Received this month" icon="income" tone="green" valueTone="income" />
-        <SummaryCard loading={loading} unavailable={!!loadError} label="Balance" value={formatCurrency(incomeTotal - total)} detail="Monthly income minus expenses" icon="wallet" tone={incomeTotal >= total ? "green" : "red"} valueTone={incomeTotal === total ? undefined : incomeTotal > total ? "positive" : "negative"} />
-        <SummaryCard loading={loading} unavailable={!!loadError} label="Transactions" value={String(monthlyExpenses.length)} detail="Expenses this month" icon="transactions" tone="purple" />
-        <SummaryCard loading={loading} unavailable={!!loadError} label="Daily average" value={formatCurrency(total / days)} detail={`${days} days in period`} icon="clock" tone="red" valueTone="expense" />
-        <SummaryCard loading={loading} unavailable={!!loadError} label="Top category" value={topCategory?.name ?? "No spending"} detail={topCategory ? `${formatCurrency(topCategory.total)} this month` : "Add your first expense"} icon="categories" tone="orange" detailTone={topCategory ? "expense" : undefined} />
+        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone="income" label="Income" value={formatCurrency(incomeTotal)} detail="Received this month" icon="income" tone="green" valueTone="income" />
+        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone="expense" label="Monthly spending" value={formatCurrency(total)} detail={changeDetail} icon="expense" tone="red" valueTone="expense" detailTone={previousTotal && total !== previousTotal ? total > previousTotal ? "negative" : "positive" : undefined} />
+        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone={incomeTotal >= total ? "income" : "expense"} label="Balance" value={formatCurrency(incomeTotal - total)} detail="Monthly income minus expenses" icon="wallet" tone={incomeTotal >= total ? "green" : "red"} valueTone={incomeTotal === total ? undefined : incomeTotal > total ? "positive" : "negative"} />
+        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone="purple" label="Transactions" value={String(monthlyExpenses.length)} detail="Expenses this month" icon="transactions" tone="purple" />
+        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone="expense" label="Daily average" value={formatCurrency(total / days)} detail={`${days} days in period`} icon="clock" tone="red" valueTone="expense" />
+        <SummaryCard loading={loading} unavailable={!!loadError} surfaceTone="warning" label="Top category" value={topCategory?.name ?? "No spending"} detail={topCategory ? `${formatCurrency(topCategory.total)} this month` : "Add your first expense"} icon="categories" tone="orange" detailTone={topCategory ? "expense" : undefined} />
       </section>
 
       <MonthlyAiSummary key={`${userId}-${month}`} month={month} />
@@ -198,18 +196,19 @@ function DashboardPage() {
         {matching.length > 5 && <button className="activity-show-more" onClick={() => setShowAll(!showAll)}>{showAll ? "Show fewer transactions" : `Show all ${matching.length} matching transactions`}<Icon name={showAll ? "back" : "next"} size={15} /></button>}
       </section>
 
-      <MonthlyInsights key={month} month={month} expenses={expenses} incomes={incomes} categories={categories} budgets={budgets} />
-      <section className="dashboard-month-charts" aria-label={`${monthLabel} spending charts`}>
-        <article className="content-card">
-          <div className="card-heading"><div><h3>Daily spending</h3><p>Day-by-day activity in {monthLabel}. Select a point to view expenses.</p></div><span className="chart-heading-icon blue"><Icon name="reports" /></span></div>
-          <div className="dashboard-daily-chart"><DailyExpenseChart expenses={monthlyExpenses} month={month} onSelect={selectDate} /></div>
-          <Link className="text-link dashboard-chart-link" to="/app/reports">Explore reports<Icon name="next" size={15} /></Link>
-        </article>
-        <article className="content-card">
-          <div className="card-heading"><div><h3>Spending by category</h3><p>Where your money went in {monthLabel}</p></div><span className="chart-heading-icon purple"><Icon name="budget" /></span></div>
-          <CategoryDonutChart expenses={monthlyExpenses} categories={categories} onSelect={selectCategory} />
-        </article>
-      </section>
+      <MonthlyInsights key={month} month={month} expenses={expenses} incomes={incomes} categories={categories} budgets={budgets}>
+        <section className="dashboard-month-charts" aria-label={`${monthLabel} spending charts`}>
+          <article className="content-card">
+            <div className="card-heading"><div><h3>Daily spending</h3><p>Day-by-day activity in {monthLabel}. Select a point to view expenses.</p></div><span className="chart-heading-icon blue"><Icon name="reports" /></span></div>
+            <div className="dashboard-daily-chart"><DailyExpenseChart expenses={monthlyExpenses} month={month} onSelect={selectDate} /></div>
+            <Link className="text-link dashboard-chart-link" to="/app/reports">Explore reports<Icon name="next" size={15} /></Link>
+          </article>
+          <article className="content-card">
+            <div className="card-heading"><div><h3>Spending by category</h3><p>Where your money went in {monthLabel}</p></div><span className="chart-heading-icon purple"><Icon name="budget" /></span></div>
+            <CategoryDonutChart expenses={monthlyExpenses} categories={categories} onSelect={selectCategory} />
+          </article>
+        </section>
+      </MonthlyInsights>
     </div>
   );
 }

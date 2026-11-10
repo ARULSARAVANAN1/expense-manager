@@ -22,7 +22,7 @@ export default function ExpenseAnalysis({ expenses, onSelect }: { expenses: Expe
     };
   });
   return <section className="content-card expense-analysis">
-    <div className="card-heading"><div><h3>Expense analysis</h3><p>Explore a month by day or a year by month. Search, category, and account filters apply; this chart has its own date period.</p></div></div>
+    <div className="card-heading"><div><h3>Expense analysis</h3><p>Explore all expenses by day or month, independently of the expense list filters.</p></div></div>
     <div className="analysis-toolbar">
       <div className="analysis-modes" role="group" aria-label="Expense analysis period">
         <button type="button" aria-pressed={mode === "month"} onClick={() => setMode("month")}>Monthly</button>
@@ -43,7 +43,7 @@ export default function ExpenseAnalysis({ expenses, onSelect }: { expenses: Expe
             if (item) onSelect(`${item.key}-01`, toDateKey(new Date(Number(year), index + 1, 0)));
           }} />
         </BarChart></ResponsiveContainer>}
-    </div> : <div className="empty-state"><h3>No expenses in {period}</h3><p>Select another period or adjust your filters.</p></div>}
+    </div> : <div className="empty-state"><h3>No expenses in {period}</h3><p>Select another period to explore your expenses.</p></div>}
     <p className="field-hint">Select a day or monthly bar to filter the expense list below.</p>
   </section>;
 }

@@ -11,11 +11,12 @@ interface SummaryCardProps {
   featured?: boolean;
   loading?: boolean;
   unavailable?: boolean;
+  surfaceTone?: "income" | "expense" | "purple" | "warning";
 }
 
-function SummaryCard({ label, value, detail, icon, tone = "blue", valueTone, detailTone, featured = false, loading = false, unavailable = false }: SummaryCardProps) {
+function SummaryCard({ label, value, detail, icon, tone = "blue", valueTone, detailTone, featured = false, loading = false, unavailable = false, surfaceTone }: SummaryCardProps) {
   return (
-    <article className={`summary-card${featured ? " summary-card--featured" : ""}`} aria-busy={loading}>
+    <article className={`summary-card${featured ? " summary-card--featured" : ""}`} aria-busy={loading} data-surface-tone={loading || unavailable ? undefined : surfaceTone}>
       <div className={`summary-icon ${tone}`}><Icon name={icon} size={19} /></div>
       <span className="summary-label">{label}</span>
       <strong className="summary-value" data-finance-tone={loading || unavailable ? undefined : valueTone} aria-label={loading ? `Loading ${label.toLowerCase()}` : undefined}>
