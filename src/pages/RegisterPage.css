@@ -1,4 +1,5 @@
 .register-page {
+    background: radial-gradient(ellipse at top, #e0f3e7, var(--background) 70%);
     min-height: 100dvh;
     display: grid;
     place-items: center;
@@ -22,7 +23,7 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
     font-weight: 700;
-    color: #2d5f92;
+    color: var(--primary);
 }
 
 .register-card h1 {
@@ -68,8 +69,8 @@
 
 .register-form input:focus {
     outline: none;
-    border-color: #2e8b7d;
-    box-shadow: 0 0 0 3px rgba(46, 139, 125, 0.16);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .register-error {
@@ -97,28 +98,33 @@
     font-size: 0.96rem;
     font-weight: 700;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.2s ease;
+    transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .secondary-button {
-    color: #204468;
-    background: #eaf3ff;
-    border: 1px solid #c7dbf3;
+    color: var(--primary);
+    background: var(--primary-soft);
+    border: 1px solid var(--primary-border);
 }
 
-.secondary-button:hover {
-    box-shadow: 0 8px 18px rgba(32, 68, 104, 0.16);
+.secondary-button:hover:not(:disabled) {
+    background: #dcefe3;
+    box-shadow: 0 4px 12px var(--primary-shadow);
 }
 
 .primary-button {
     color: #f8feff;
-    background: linear-gradient(135deg, #2563eb 0%, #0f766e 100%);
+    background: var(--primary);
 }
 
-.primary-button:hover {
+.primary-button:hover:not(:disabled) {
+    background: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+    box-shadow: 0 6px 18px var(--primary-shadow);
 }
+
+.register-actions button:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; transform: none; }
+.register-actions button:not(:disabled):active { transform: translateY(0); box-shadow: none; }
 
 .login-text {
     margin: 14px 0 0;
@@ -127,7 +133,7 @@
 }
 
 .login-text a {
-    color: #0f6f8b;
+    color: var(--primary);
     font-weight: 700;
     text-decoration: none;
 }

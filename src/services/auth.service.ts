@@ -37,3 +37,12 @@ export async function getCurrentUser(): Promise<User> {
 
     return response.data.data;
 }
+
+export async function loginWithGoogle(credential: string): Promise<AuthResponse> {
+    const response = await api.post<ApiResponse<AuthResponse>>("/auth/google", { credential });
+    const result = response.data.data;
+    if (!response.data.success || !result?.token || !result.user?.id || !result.user.name || !result.user.email) {
+        throw new Error("Google sign-in returned an invalid session.");
+    }
+    return result;
+}

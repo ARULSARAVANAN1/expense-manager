@@ -4,6 +4,7 @@ import FormInput from "../components/FormInput";
 import "./RegisterPage.css";
 import { AxiosError } from "axios";
 import { useAuth } from "../contexts/AuthContext";
+import AuthBackground from "../components/AuthBackground";
 
 interface ApiErrorResponse {
     success?: boolean;
@@ -87,6 +88,7 @@ function RegisterPage() {
 
     return (
         <div className="register-page">
+            <AuthBackground />
             <section className="register-card">
                 <p className="register-eyebrow">Expense Finance Manager</p>
                 <h1>Create your account</h1>

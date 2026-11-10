@@ -14,6 +14,7 @@ import type {
 import {
     getCurrentUser,
     login as loginApi,
+    loginWithGoogle as googleLoginApi,
     register as registerApi,
 } from "../services/auth.service";
 import { getToken, removeToken, setToken } from "../utils.ts/auth-storage";
@@ -24,6 +25,7 @@ interface AuthContextValue {
     isAuthenticated: boolean;
     isLoading: boolean;
     login: (data: LoginRequest) => Promise<void>;
+    loginWithGoogle: (credential: string) => Promise<void>;
     register: (data: RegisterRequest) => Promise<void>;
     logout: () => void;
 }
@@ -50,6 +52,12 @@ export function AuthProvider({
     async function register(data: RegisterRequest) {
         const result = await registerApi(data);
 
+        setToken(result.token);
+        setUser(result.user);
+    }
+
+    async function loginWithGoogle(credential: string) {
+        const result = await googleLoginApi(credential);
         setToken(result.token);
         setUser(result.user);
     }
@@ -100,6 +108,7 @@ export function AuthProvider({
                 isAuthenticated: !!user,
                 isLoading,
                 login,
+                loginWithGoogle,
                 register,
                 logout,
             }}

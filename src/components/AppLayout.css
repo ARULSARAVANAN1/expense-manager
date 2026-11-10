@@ -1,0 +1,74 @@
+.app-sidebar { width: 252px; padding: 28px 16px 16px; background: linear-gradient(180deg, #fff 0%, #eef8f1 100%); border-right-color: var(--border); }
+.app-sidebar .brand { gap: 10px; padding: 0 4px; }
+.app-sidebar .brand-mark { width: 40px; height: 44px; flex-shrink: 0; border-radius: 13px; background: var(--primary); color: #fff; box-shadow: 0 5px 12px var(--primary-shadow); }
+.brand-name { display: grid; gap: 5px; font-size: 15px; }
+.brand-name small { color: var(--muted); font-size: 10px; font-weight: 500; letter-spacing: 0; }
+.sidebar-navigation { flex: 1; min-height: 0; overflow-y: auto; margin: 30px -4px 20px; padding: 4px; scrollbar-width: thin; }
+.app-sidebar .sidebar-nav { gap: 7px; }
+.app-sidebar .sidebar-nav a { min-height: 47px; gap: 13px; padding: 0 16px; border: 1px solid transparent; border-radius: 11px; font-size: 14px; }
+.app-sidebar .sidebar-nav a:hover { border-color: var(--primary-border); background: #fff; }
+.app-sidebar .sidebar-nav a.active { border-color: currentColor; box-shadow: 0 3px 8px #17203308; }
+.app-sidebar .sidebar-nav a.active::after { right: 12px; width: 6px; height: 6px; }
+.app-sidebar .nav-section-label { margin: 28px 16px 13px; color: #718096; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+.app-sidebar .sidebar-bottom { flex-shrink: 0; gap: 9px; padding: 14px 8px 0; }
+.app-sidebar .profile-info strong { font-size: 13px; }
+.app-sidebar .profile-info span { color: var(--muted); }
+.app-sidebar .logout-button { display: grid; place-items: center; width: 33px; height: 36px; border-radius: 9px; }
+.app-sidebar .logout-button:hover { color: var(--finance-expense); background: #feecec; }
+.app-main { margin-left: 252px; }
+.topbar { position: sticky; top: 0; z-index: 15; height: 76px; gap: 16px; background: #ffffffed; backdrop-filter: blur(12px); }
+.topbar-heading, .topbar-actions, .topbar-date, .topbar-profile, .topbar-add { display: flex; align-items: center; }
+.topbar-heading { min-width: 0; gap: 11px; }
+.topbar h1 { margin: 0; font-size: 17px; letter-spacing: -.3px; }
+.topbar-page-icon { display: grid; place-items: center; width: 38px; height: 38px; flex-shrink: 0; color: var(--primary); background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: 12px; }
+.topbar-page-icon[data-page="income"] { color: var(--finance-income); background: #eaf8ef; border-color: #d3efdd; }
+.topbar-page-icon[data-page="expenses"] { color: var(--finance-expense); background: #fff0f0; border-color: #f9dcdc; }
+.topbar-page-icon[data-page="reports"] { color: var(--purple); background: #f2edff; border-color: #e5dcff; }
+.topbar-actions { gap: 18px; flex-shrink: 0; }
+.topbar-date { gap: 7px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.topbar-add { min-height: 39px; gap: 8px; padding: 0 14px; color: var(--primary); background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: 11px; font-size: 12px; font-weight: 650; transition: background .18s, box-shadow .18s; }
+.topbar-add:hover { background: #dcefe3; box-shadow: 0 3px 8px var(--primary-shadow); }
+.topbar-add:active { box-shadow: none; }
+.topbar-profile { gap: 9px; max-width: 160px; padding-left: 18px; border-left: 1px solid var(--border); }
+.topbar-profile .profile-avatar.small { width: 34px; height: 34px; margin: 0; }
+.topbar-profile > span { overflow: hidden; color: #475569; font-size: 12px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.topbar-account { position: relative; padding-left: 12px; border-left: 1px solid var(--border); }
+.topbar-account .topbar-profile { gap: 8px; max-width: 190px; padding: 6px 9px; border: 1px solid transparent; border-radius: 12px; cursor: pointer; list-style: none; transition: background .18s, border-color .18s; }
+.topbar-profile::-webkit-details-marker { display: none; }
+.topbar-account .topbar-profile:hover, .topbar-account[open] .topbar-profile { background: var(--primary-soft); border-color: var(--primary-border); }
+.topbar-account .topbar-profile > .profile-avatar { display: grid; color: var(--primary); }
+.topbar-profile > .profile-dropdown-chevron { display: inline-flex; flex-shrink: 0; color: var(--primary); transform: rotate(90deg); transition: transform .18s; }
+.topbar-account[open] .profile-dropdown-chevron { transform: rotate(-90deg); }
+.profile-dropdown { position: absolute; top: calc(100% + 10px); right: 0; width: min(260px, calc(100vw - 28px)); padding: 8px; border: 1px solid var(--primary-border); border-radius: 14px; background: #fff; box-shadow: 0 12px 32px #16452b20; }
+.profile-dropdown-identity { display: grid; gap: 5px; padding: 10px 10px 14px; margin-bottom: 6px; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.profile-dropdown-identity strong { color: var(--text); font-size: 13px; }
+.profile-dropdown-identity > span { color: var(--muted); font-size: 12px; }
+.profile-dropdown > a, .profile-dropdown > button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 42px; padding: 10px; border: 0; border-radius: 9px; background: transparent; color: var(--primary); font-size: 13px; font-weight: 600; text-align: left; transition: background .18s; }
+.profile-dropdown > a:hover { background: var(--primary-soft); }
+.profile-dropdown > .profile-dropdown-logout { color: var(--finance-expense); }
+.profile-dropdown > .profile-dropdown-logout:hover { background: #fff0f0; }
+.sidebar-close { display: none; }
+.skip-navigation { position: fixed; top: -80px; left: 16px; z-index: 60; padding: 12px 18px; border-radius: 8px; background: var(--primary); color: #fff; }
+.skip-navigation:focus { top: 12px; }
+@media (max-width: 1150px) {
+  .topbar-date { display: none; }
+}
+@media (max-width: 820px) {
+  .app-main { margin-left: 0; }
+  .app-sidebar { z-index: 45; width: min(290px, 85vw); padding-top: 65px; }
+  .sidebar-backdrop { z-index: 44; }
+  .sidebar-close { position: absolute; top: 16px; right: 16px; display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 9px; background: #fff; color: var(--muted); }
+  .mobile-menu-toggle { position: fixed; top: 20px; z-index: 16; }
+  .topbar { padding-left: 68px; }
+}
+@media (max-width: 640px) {
+  .topbar { gap: 8px; padding-left: 62px; }
+  .topbar-heading { gap: 7px; }
+  .topbar-page-icon { display: none; }
+  .topbar h1 { font-size: 15px; }
+  .topbar-actions { gap: 9px; }
+  .topbar-add { width: 35px; min-height: 35px; justify-content: center; padding: 0; }
+  .topbar-add > span, .topbar-profile > span { display: none; }
+  .topbar-profile { padding-left: 9px; }
+  .topbar-account { padding-left: 7px; }
+}
