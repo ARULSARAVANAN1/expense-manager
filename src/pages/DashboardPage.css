@@ -3,7 +3,7 @@
 .dashboard-month-picker > button:hover { background: #dcefe3; }
 .dashboard-month-picker input { width: 100%; min-width: 0; padding: 8px 12px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 14px; text-align: center; cursor: pointer; }
 .monthly-dashboard .header-actions { flex-wrap: wrap; gap: 16px; }
-.monthly-dashboard .dashboard-summary { gap: 12px; margin-bottom: 22px; }
+.monthly-dashboard .dashboard-summary { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; }
 .monthly-dashboard .dashboard-summary .summary-card { min-height: 112px; padding: 15px; }
 .dashboard-summary .summary-label { padding-right: 28px; }
 .dashboard-summary .summary-value { font-size: 19px; }
@@ -40,9 +40,11 @@
 .dashboard-daily-chart { height: 310px; }
 .dashboard-month-charts .category-legend { max-height: 340px; overflow-y: auto; scrollbar-width: thin; padding: 3px; }
 @media (max-width: 1150px) {
+  .monthly-dashboard .dashboard-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .dashboard-month-charts { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
+  .monthly-dashboard .dashboard-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .monthly-dashboard .header-actions { gap: 14px; }
   .dashboard-month-picker { flex: 1 1 100%; gap: 12px; }
   .dashboard-month-picker .react-datepicker-wrapper { flex: 1; width: auto; }

@@ -1,7 +1,7 @@
 import DatePicker from "../components/DatePicker";
 import { useMemo, useState } from "react";
 import Icon from "../components/Icon";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { addExpense, getExpenses, updateExpense } from "../services/expense.service";
 import { getAccounts, getCategories } from "../services/finance-data.service";
@@ -17,15 +17,18 @@ function ExpenseFormPage() {
   const isEditing = Boolean(expenseId);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const expenses = useMemo(() => getExpenses(user?.id ?? ""), [user?.id]);
   const expenseCategories = useMemo(() => getCategories(user?.id ?? "", "expense"), [user?.id]);
   const expenseAccounts = useMemo(() => getAccounts(user?.id ?? ""), [user?.id]);
   const existing = expenses.find((expense) => expense.id === expenseId);
-  const [amount, setAmount] = useState(existing ? String(existing.amount) : "");
-  const [description, setDescription] = useState(existing?.description ?? "");
+  const [amount, setAmount] = useState(existing ? String(existing.amount) : searchParams.get("amount") ?? "");
+  const [description, setDescription] = useState(existing?.description ?? searchParams.get("description") ?? "");
   const [categoryId, setCategoryId] = useState(existing?.categoryId ?? "");
-  const [accountId, setAccountId] = useState(existing?.accountId ?? "upi");
-  const [date, setDate] = useState(existing?.date ?? today());
+  const [accountId, setAccountId] = useState(existing?.accountId ?? expenseAccounts[0]?.id ?? "");
+  const draftDate = searchParams.get("date");
+  const validDraftDate = draftDate && /^\d{4}-\d{2}-\d{2}$/.test(draftDate) && !Number.isNaN(new Date(`${draftDate}T00:00:00`).getTime());
+  const [date, setDate] = useState(existing?.date ?? (validDraftDate ? draftDate : today()));
   const [notes, setNotes] = useState(existing?.notes ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -38,7 +41,7 @@ function ExpenseFormPage() {
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextErrors: Record<string, string> = {};
-    if (!amount || Number(amount) <= 0) nextErrors.amount = "Enter an amount greater than zero.";
+    if (!amount || !Number.isFinite(Number(amount)) || Number(amount) <= 0) nextErrors.amount = "Enter a finite amount greater than zero.";
     if (!description.trim()) nextErrors.description = "Description is required.";
     if (!categoryId) nextErrors.categoryId = "Choose a category.";
     if (!date) nextErrors.date = "Choose an expense date.";
@@ -46,7 +49,10 @@ function ExpenseFormPage() {
     if (Object.keys(nextErrors).length || !user) return;
     const selectedCategory = expenseCategories.find((item) => item.id === categoryId);
     const selectedAccount = expenseAccounts.find((item) => item.id === accountId);
-    if (!selectedCategory || !selectedAccount) return;
+    if (!selectedCategory || !selectedAccount) {
+      setSubmitError("Choose an available category and account before saving.");
+      return;
+    }
     const input: ExpenseInput = {
       amount: Number(amount), description: description.trim(), categoryId,
       categoryName: selectedCategory.name, accountId, accountName: selectedAccount.name,

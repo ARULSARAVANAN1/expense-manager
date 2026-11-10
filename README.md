@@ -135,3 +135,6 @@ category charts. Daily spending uses a smooth gradient area chart with INR
 tooltips and day selection to open matching expenses. The month picker updates
 every section. Income remains a
 summary metric rather than an income-versus-expenses chart.
+The Balance summary shows selected-month recorded income minus expenses,
+green when positive and red when negative. It is separate from the
+safe-to-spend estimate, which also reserves budget and recurring commitments.

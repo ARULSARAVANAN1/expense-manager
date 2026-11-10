@@ -4,10 +4,13 @@ import { Link } from "react-router-dom";
 import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
 import SummaryCard from "../components/SummaryCard";
+import QuickExpense from "../components/QuickExpense";
+import MonthlyInsights from "../components/MonthlyInsights";
 import { CategoryDonutChart, DailyExpenseChart } from "../components/FinanceCharts";
 import { useAuth } from "../contexts/AuthContext";
 import { getExpenses } from "../services/expense.service";
-import { getCategories, getIncomes } from "../services/finance-data.service";
+import { getBudgets, getCategories, getIncomes } from "../services/finance-data.service";
+import { getRecurringExpenses } from "../services/recurring-expense.service";
 import { formatCurrency, formatDate, toDateKey } from "../utils.ts/finance";
 import "./DashboardPage.css";
 
@@ -21,6 +24,8 @@ function DashboardPage() {
   const expenses = useMemo(() => getExpenses(user?.id ?? ""), [user?.id]);
   const incomes = useMemo(() => getIncomes(user?.id ?? ""), [user?.id]);
   const categories = useMemo(() => getCategories(user?.id ?? "", "expense"), [user?.id]);
+  const budgets = useMemo(() => getBudgets(user?.id ?? ""), [user?.id]);
+  const schedules = useMemo(() => getRecurringExpenses(user?.id ?? ""), [user?.id]);
   const [year, monthNumber] = month.split("-").map(Number);
   const monthStart = new Date(year, monthNumber - 1, 1);
   const monthEnd = new Date(year, monthNumber, 0);
@@ -75,11 +80,13 @@ function DashboardPage() {
       <section className="summary-grid dashboard-summary" aria-label={`${monthLabel} summary`}>
         <SummaryCard label="Monthly spending" value={formatCurrency(total)} detail={changeDetail} icon="expense" tone="red" valueTone="expense" detailTone={previousTotal && total !== previousTotal ? total > previousTotal ? "negative" : "positive" : undefined} />
         <SummaryCard label="Income" value={formatCurrency(incomeTotal)} detail="Received this month" icon="income" tone="green" valueTone="income" />
+        <SummaryCard label="Balance" value={formatCurrency(incomeTotal - total)} detail="Monthly income minus expenses" icon="wallet" tone={incomeTotal >= total ? "green" : "red"} valueTone={incomeTotal === total ? undefined : incomeTotal > total ? "positive" : "negative"} />
         <SummaryCard label="Transactions" value={String(monthlyExpenses.length)} detail="Expenses this month" icon="transactions" tone="purple" />
         <SummaryCard label="Daily average" value={formatCurrency(total / days)} detail={`${days} days in period`} icon="clock" tone="red" valueTone="expense" />
         <SummaryCard label="Top category" value={topCategory?.name ?? "No spending"} detail={topCategory ? `${formatCurrency(topCategory.total)} this month` : "Add your first expense"} icon="categories" tone="orange" detailTone={topCategory ? "expense" : undefined} />
       </section>
 
+      <QuickExpense />
       <section className="content-card dashboard-activity" aria-labelledby="dashboard-activity-title">
         <div className="card-heading">
           <div><h3 id="dashboard-activity-title">Recent transactions <span className="activity-count">{monthlyExpenses.length}</span></h3><p>Explore your expenses for {monthLabel}. Select a transaction for a quick preview.</p></div>
@@ -117,6 +124,7 @@ function DashboardPage() {
         {matching.length > 5 && <button className="activity-show-more" onClick={() => setShowAll(!showAll)}>{showAll ? "Show fewer transactions" : `Show all ${matching.length} matching transactions`}<Icon name={showAll ? "back" : "next"} size={15} /></button>}
       </section>
 
+      <MonthlyInsights key={month} month={month} expenses={expenses} incomes={incomes} categories={categories} budgets={budgets} schedules={schedules} />
       <section className="dashboard-month-charts" aria-label={`${monthLabel} spending charts`}>
         <article className="content-card">
           <div className="card-heading"><div><h3>Daily spending</h3><p>Day-by-day activity in {monthLabel}. Select a point to view expenses.</p></div><span className="chart-heading-icon blue"><Icon name="reports" /></span></div>

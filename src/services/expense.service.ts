@@ -4,6 +4,7 @@ import {
 } from "../types/expense";
 import type { Expense, ExpenseInput } from "../types/expense";
 import { getRecurringExpenses, reconcileRecurringExpenses, storeRecurringExpenses } from "./recurring-expense.service";
+import { getExpenseSplits } from "./split-expense.service";
 
 const STORAGE_PREFIX = "expense_manager_expenses_";
 
@@ -107,12 +108,18 @@ export function updateExpense(userId: string, id: string, input: ExpenseInput): 
   if (!existing) {
     throw new Error("This expense could not be found.");
   }
+  if (input.amount !== existing.amount && getExpenseSplits(userId).some((split) => split.expenseId === id)) {
+    throw new Error("Remove this expense's shared split before changing its amount. This protects participant balances.");
+  }
   const updated = { ...existing, ...input, updatedAt: new Date().toISOString() };
   saveExpenses(userId, expenses.map((expense) => expense.id === id ? updated : expense));
   return updated;
 }
 
 export function deleteExpense(userId: string, id: string): void {
+  if (getExpenseSplits(userId).some((split) => split.expenseId === id)) {
+    throw new Error("Remove this expense's shared split before deleting the expense.");
+  }
   const expenses = getExpenses(userId);
   if (!expenses.some((expense) => expense.id === id)) {
     throw new Error("This expense could not be found.");
