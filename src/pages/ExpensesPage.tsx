@@ -102,7 +102,10 @@ function ExpensesPage() {
           <label className="search-field"><Icon name="search" /><input aria-label="Search expenses" placeholder="Search expenses..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></label>
           <select className="select-control" aria-label="Filter by category" value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
           <select className="select-control" aria-label="Filter by account" value={account} onChange={(event) => { setAccount(event.target.value); setPage(1); }}><option value="">All accounts</option>{accounts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
-          <div className="date-filter"><DatePicker aria-label="Start date" type="date" value={from} onChange={(value) => { setFrom(value); setPage(1); }} /><span>–</span><DatePicker aria-label="End date" type="date" value={to} onChange={(value) => { setTo(value); setPage(1); }} /></div>
+          <div className="date-range-filters">
+            <label className="date-range-field"><span>From</span><DatePicker aria-label="Start date" type="date" value={from} onChange={(value) => { setFrom(value); setPage(1); }} /></label>
+            <label className="date-range-field"><span>To</span><DatePicker aria-label="End date" type="date" value={to} onChange={(value) => { setTo(value); setPage(1); }} /></label>
+          </div>
           <select className="select-control sort-select" aria-label="Sort expenses" value={sort} onChange={(event) => setSort(event.target.value)}><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="highest">Highest amount</option><option value="lowest">Lowest amount</option></select>
           <button className="reset-button" type="button" onClick={resetFilters}><Icon name="reset" size={14} />Reset</button>
         </div>

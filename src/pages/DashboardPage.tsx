@@ -21,6 +21,7 @@ function DashboardPage() {
   const [month, setMonth] = useState(() => toDateKey(new Date()).slice(0, 7));
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -57,22 +58,39 @@ function DashboardPage() {
   const monthEnd = new Date(year, monthNumber, 0);
   const monthLabel = new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(monthStart);
   const previousMonth = toDateKey(new Date(year, monthNumber - 2, 1)).slice(0, 7);
+  const previousMonthLabel = new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(new Date(year, monthNumber - 2, 1));
+  const today = new Date();
+  const firstName = user?.name.trim().split(/\s+/)[0];
+  const greeting = today.getHours() < 12 ? "Good morning" : today.getHours() < 18 ? "Good afternoon" : "Good evening";
+  const isCurrentMonth = month === toDateKey(today).slice(0, 7);
+  const days = isCurrentMonth ? today.getDate() : monthEnd.getDate();
+  const comparisonDays = isCurrentMonth ? Math.min(days, new Date(year, monthNumber - 1, 0).getDate()) : new Date(year, monthNumber - 1, 0).getDate();
   const monthlyExpenses = expenses.filter((expense) => expense.date.startsWith(month));
   const total = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
   const incomeTotal = incomes.filter((income) => income.date.startsWith(month)).reduce((sum, income) => sum + income.amount, 0);
-  const previousTotal = expenses.filter((expense) => expense.date.startsWith(previousMonth)).reduce((sum, expense) => sum + expense.amount, 0);
-  const changeDetail = previousTotal
-    ? `${((total - previousTotal) / previousTotal * 100).toFixed(1)}% vs last month`
-    : "No spending last month";
-  const today = new Date();
-  const days = month === toDateKey(today).slice(0, 7) ? today.getDate() : monthEnd.getDate();
+  const previousTotal = expenses.filter((expense) => expense.date.startsWith(previousMonth) && Number(expense.date.slice(8, 10)) <= comparisonDays).reduce((sum, expense) => sum + expense.amount, 0);
+  const spendingChange = previousTotal ? (total - previousTotal) / previousTotal * 100 : null;
+  const comparisonLabel = isCurrentMonth ? `the first ${comparisonDays} days of ${previousMonthLabel}` : previousMonthLabel;
+  const changeDetail = spendingChange !== null
+    ? spendingChange === 0
+      ? `Same as ${isCurrentMonth ? "the same point last month" : "last month"}`
+      : `${Math.abs(spendingChange).toFixed(1)}% ${spendingChange > 0 ? "above" : "below"} ${isCurrentMonth ? "same point last month" : "last month"}`
+    : "No comparable spending last month";
   const categoryTotals = categories.map((category) => ({
     ...category,
     total: monthlyExpenses.filter((expense) => expense.categoryId === category.id).reduce((sum, expense) => sum + expense.amount, 0),
   })).sort((a, b) => b.total - a.total);
   const topCategory = categoryTotals.find((category) => category.total > 0);
+  const spendingInsight = spendingChange === null
+    ? topCategory
+      ? `${topCategory.name} is your top category at ${formatCurrency(topCategory.total)}. There is no comparable spending recorded for ${previousMonthLabel}.`
+      : "Add an expense to start your monthly spending snapshot."
+    : spendingChange === 0
+      ? `Your spending matches ${comparisonLabel}.`
+      : `You have spent ${Math.abs(spendingChange).toFixed(1)}% ${spendingChange < 0 ? "less" : "more"} than ${comparisonLabel}.`;
   const matching = monthlyExpenses.filter((expense) =>
     (!categoryId || expense.categoryId === categoryId)
+    && (!selectedDate || expense.date === selectedDate)
     && (!search.trim() || `${expense.description} ${expense.notes ?? ""} ${expense.accountName ?? ""}`.toLowerCase().includes(search.trim().toLowerCase())),
   ).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
   const visible = showAll ? matching : matching.slice(0, 5);
@@ -82,12 +100,29 @@ function DashboardPage() {
     if (!/^\d{4}-\d{2}$/.test(value) || Number(value.slice(0, 4)) < 1000 || Number(value.slice(5)) < 1 || Number(value.slice(5)) > 12) return;
     setMonth(value);
     setCategoryId("");
+    setSelectedDate("");
     setExpandedId(null);
     setShowAll(false);
   }
 
   function moveMonth(offset: number) {
     selectMonth(toDateKey(new Date(year, monthNumber - 1 + offset, 1)).slice(0, 7));
+  }
+
+  function selectCategory(id: string) {
+    setCategoryId(id);
+    setSelectedDate("");
+    setExpandedId(null);
+    setShowAll(false);
+    document.getElementById("dashboard-activity-title")?.scrollIntoView({ block: "start" });
+  }
+
+  function selectDate(date: string) {
+    setCategoryId("");
+    setSelectedDate(date);
+    setExpandedId(null);
+    setShowAll(false);
+    document.getElementById("dashboard-activity-title")?.scrollIntoView({ block: "start" });
   }
 
   return (
@@ -103,8 +138,17 @@ function DashboardPage() {
         </div>
       } />
 
+      <aside className="dashboard-insight" aria-label={`${monthLabel} spending insight`}>
+        <span className="dashboard-insight-icon"><Icon name="sparkle" size={19} /></span>
+        <div className="dashboard-insight-copy">
+          <strong>{loading ? "Your spending snapshot" : `${greeting}${firstName ? `, ${firstName}` : ""}`}</strong>
+          <span>{loading ? "Updating your monthly overview…" : loadError ? "Your monthly spending snapshot could not be updated." : spendingInsight}</span>
+        </div>
+        <a className="text-link" href="#dashboard-activity-title">Explore activity<Icon name="next" size={15} /></a>
+      </aside>
+
       <section className="summary-grid dashboard-summary" aria-label={`${monthLabel} summary`}>
-        <SummaryCard label="Monthly spending" value={formatCurrency(total)} detail={changeDetail} icon="expense" tone="red" valueTone="expense" detailTone={previousTotal && total !== previousTotal ? total > previousTotal ? "negative" : "positive" : undefined} />
+        <SummaryCard label="Monthly spending" value={formatCurrency(total)} detail={changeDetail} icon="expense" tone="red" valueTone="expense" detailTone={previousTotal && total !== previousTotal ? total > previousTotal ? "negative" : "positive" : undefined} featured />
         <SummaryCard label="Income" value={formatCurrency(incomeTotal)} detail="Received this month" icon="income" tone="green" valueTone="income" />
         <SummaryCard label="Balance" value={formatCurrency(incomeTotal - total)} detail="Monthly income minus expenses" icon="wallet" tone={incomeTotal >= total ? "green" : "red"} valueTone={incomeTotal === total ? undefined : incomeTotal > total ? "positive" : "negative"} />
         <SummaryCard label="Transactions" value={String(monthlyExpenses.length)} detail="Expenses this month" icon="transactions" tone="purple" />
@@ -117,7 +161,7 @@ function DashboardPage() {
       {loading && <p role="status">Loading your finance data…</p>}
       <section className="content-card dashboard-activity" aria-labelledby="dashboard-activity-title">
         <div className="card-heading">
-          <div><h3 id="dashboard-activity-title">Recent transactions <span className="activity-count">{monthlyExpenses.length}</span></h3><p>Explore your expenses for {monthLabel}. Select a transaction for a quick preview.</p></div>
+          <div><h3 id="dashboard-activity-title">Recent transactions <span className="activity-count">{matching.length}</span></h3><p>{selectedDate ? `Showing expenses for ${formatDate(selectedDate)}` : `Explore your expenses for ${monthLabel}. Select a transaction for a quick preview.`}{categoryId ? ` · ${categories.find((category) => category.id === categoryId)?.name ?? "Selected category"}` : ""}</p></div>
           <Link className="text-link" to={`/app/expenses?${dateQuery}`}>View all <Icon name="next" size={15} /></Link>
         </div>
         <div className="activity-toolbar">
@@ -125,7 +169,7 @@ function DashboardPage() {
           <select className="select-control" aria-label="Recent transaction category" value={categoryId} onChange={(event) => { setCategoryId(event.target.value); setShowAll(false); }}>
             <option value="">All categories</option>{categories.map((category) => <option value={category.id} key={category.id}>{category.name}</option>)}
           </select>
-          {(search || categoryId) && <button className="reset-button" onClick={() => { setSearch(""); setCategoryId(""); }}><Icon name="reset" size={14} />Clear</button>}
+          {(search || categoryId || selectedDate) && <button className="reset-button" onClick={() => { setSearch(""); setCategoryId(""); setSelectedDate(""); setShowAll(false); }}><Icon name="reset" size={14} />Clear</button>}
         </div>
         <div className="activity-list">
           {visible.map((expense) => {
@@ -147,7 +191,7 @@ function DashboardPage() {
               </article>
             );
           })}
-          {!visible.length && <div className="empty-state"><span><Icon name="search" size={22} /></span><h3>{monthlyExpenses.length ? "No matching transactions" : "No expenses this month"}</h3><p>{monthlyExpenses.length ? "Try another search or category." : `Start tracking your spending for ${monthLabel}.`}</p>{!monthlyExpenses.length && <Link className="button button-primary" to="/app/expenses/new"><Icon name="plus" size={16} />Add expense</Link>}</div>}
+          {!visible.length && <div className="empty-state"><span><Icon name="search" size={22} /></span><h3>{monthlyExpenses.length ? "No matching transactions" : "No expenses this month"}</h3><p>{monthlyExpenses.length ? "Try another search, date, or category." : `Start tracking your spending for ${monthLabel}.`}</p>{!monthlyExpenses.length && <Link className="button button-primary" to="/app/expenses/new"><Icon name="plus" size={16} />Add expense</Link>}</div>}
         </div>
         {matching.length > 5 && <button className="activity-show-more" onClick={() => setShowAll(!showAll)}>{showAll ? "Show fewer transactions" : `Show all ${matching.length} matching transactions`}<Icon name={showAll ? "back" : "next"} size={15} /></button>}
       </section>
@@ -156,12 +200,12 @@ function DashboardPage() {
       <section className="dashboard-month-charts" aria-label={`${monthLabel} spending charts`}>
         <article className="content-card">
           <div className="card-heading"><div><h3>Daily spending</h3><p>Day-by-day activity in {monthLabel}. Select a point to view expenses.</p></div><span className="chart-heading-icon blue"><Icon name="reports" /></span></div>
-          <div className="dashboard-daily-chart"><DailyExpenseChart expenses={monthlyExpenses} month={month} /></div>
+          <div className="dashboard-daily-chart"><DailyExpenseChart expenses={monthlyExpenses} month={month} onSelect={selectDate} /></div>
           <Link className="text-link dashboard-chart-link" to="/app/reports">Explore reports<Icon name="next" size={15} /></Link>
         </article>
         <article className="content-card">
           <div className="card-heading"><div><h3>Spending by category</h3><p>Where your money went in {monthLabel}</p></div><span className="chart-heading-icon purple"><Icon name="budget" /></span></div>
-          <CategoryDonutChart expenses={monthlyExpenses} categories={categories} onSelect={(id) => { setCategoryId(id); setShowAll(false); document.getElementById("dashboard-activity-title")?.scrollIntoView({ block: "start" }); }} />
+          <CategoryDonutChart expenses={monthlyExpenses} categories={categories} onSelect={selectCategory} />
         </article>
       </section>
     </div>

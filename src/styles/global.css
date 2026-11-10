@@ -8,21 +8,37 @@
   -webkit-font-smoothing: antialiased;
 }
 
+html,
+body {
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
 body {
   line-height: 1.5;
 }
 
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   color: inherit;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   color: var(--text-primary);
   background-color: var(--surface);
   accent-color: var(--primary);
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: var(--text-secondary);
   opacity: 1;
 }
@@ -47,29 +63,40 @@ select option {
   color: var(--text-primary);
 }
 
-.page-heading h2, .form-page-heading h2,
-.login-card h1, .register-card h1 {
+.page-heading h2,
+.form-page-heading h2,
+.login-card h1,
+.register-card h1 {
   font-size: var(--font-size-page);
   font-weight: var(--font-weight-bold);
 }
 
-.form-section-title h3, .confirm-dialog h3,
+.form-section-title h3,
+.confirm-dialog h3,
 .profile-account-identity h3 {
   font-size: var(--font-size-section);
   font-weight: var(--font-weight-medium);
 }
 
-.card-heading h3, .dashboard-section-heading h3 {
+.card-heading h3,
+.dashboard-section-heading h3 {
   font-size: var(--font-size-card);
   font-weight: var(--font-weight-medium);
 }
 
-.summary-value, .dashboard-summary .summary-value,
-.detail-amount, .insight-main-value, .simulator-result > strong,
+.summary-value,
+.dashboard-summary .summary-value,
+.detail-amount,
+.insight-main-value,
+.simulator-result>strong,
 .preview-amount strong {
   font-size: var(--font-size-financial);
   font-weight: var(--font-weight-bold);
   font-variant-numeric: tabular-nums;
+}
+
+.summary-grid .summary-card .summary-value {
+  font-size: var(--font-size-card);
 }
 
 .summary-value {
@@ -77,25 +104,36 @@ select option {
   overflow-wrap: anywhere;
 }
 
-[data-finance-tone], .amount-cell, .activity-amount,
-.chart-tooltip-value b, .category-row-heading strong,
-.category-legend-row strong, .donut-center strong,
-.budget-amounts, .insight-breakdown dd, .amount-input input,
+[data-finance-tone],
+.amount-cell,
+.activity-amount,
+.chart-tooltip-value b,
+.category-row-heading strong,
+.category-legend-row strong,
+.donut-center strong,
+.budget-amounts,
+.insight-breakdown dd,
+.amount-input input,
 .data-table td[data-label="Amount"] {
   font-variant-numeric: tabular-nums;
 }
 
-.content-card, .summary-card, .preview-card,
-.login-card, .register-card {
+.content-card,
+.summary-card,
+.preview-card,
+.login-card,
+.register-card {
   border-radius: var(--radius-card);
 }
 
-.confirm-dialog, .income-dialog {
+.confirm-dialog,
+.income-dialog {
   border: 1px solid var(--border);
   border-radius: var(--radius-dialog);
 }
 
-.profile-selected-account, .activity-count {
+.profile-selected-account,
+.activity-count {
   border-radius: var(--radius-badge);
 }
 
@@ -104,9 +142,9 @@ select option {
   border-radius: var(--radius-button);
 }
 
-:root :is(.field-label input, .field-label select, .field-label textarea,
+:root :is(.field-label input:not(.calendar-input), .field-label select, .field-label textarea,
   .login-form input, .register-form input, .quick-expense-controls input,
-  .search-field, .amount-input, .input, .select-control, .calendar-input) {
+  .search-field, .amount-input, .input, .select-control) {
   border-radius: var(--radius-input);
   font-size: var(--font-size-body);
 }
@@ -157,12 +195,15 @@ select option {
 }
 
 @media (max-width: 640px) {
-  :root .login-page, :root .register-page {
+
+  :root .login-page,
+  :root .register-page {
     padding-top: calc(var(--space-12) * 2 + var(--space-6));
   }
 
   .monthly-dashboard .dashboard-summary,
-  .summary-grid, .summary-grid-three {
+  .summary-grid,
+  .summary-grid-three {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
   }
 }

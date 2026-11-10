@@ -8,11 +8,12 @@ interface SummaryCardProps {
   tone?: string;
   valueTone?: FinanceTone;
   detailTone?: FinanceTone;
+  featured?: boolean;
 }
 
-function SummaryCard({ label, value, detail, icon, tone = "blue", valueTone, detailTone }: SummaryCardProps) {
+function SummaryCard({ label, value, detail, icon, tone = "blue", valueTone, detailTone, featured = false }: SummaryCardProps) {
   return (
-    <article className="summary-card">
+    <article className={`summary-card${featured ? " summary-card--featured" : ""}`}>
       <div className={`summary-icon ${tone}`}><Icon name={icon} size={19} /></div>
       <span className="summary-label">{label}</span>
       <strong className="summary-value" data-finance-tone={valueTone}>{value}</strong>

@@ -1,62 +1,353 @@
-.react-datepicker-wrapper { min-width: 0; max-width: 100%; }
-.field-label > .react-datepicker-wrapper { width: 100%; }
-.calendar-input { width: 100%; min-height: 38px; border: 1px solid var(--border); border-radius: var(--radius-input); padding: var(--space-2) var(--space-6) var(--space-2) var(--space-3); background: var(--surface); color: var(--text); font-size: var(--font-size-secondary); }
-.finance-calendar-popper { z-index: 80; }
-.finance-calendar { font-family: var(--font-family); color: var(--text-primary); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-raised); padding: var(--space-2); }
-.finance-calendar .react-datepicker__header { background: var(--primary-soft); border-bottom-color: var(--border); border-radius: var(--radius-input); }
-.finance-calendar .react-datepicker__day--selected, .finance-calendar .react-datepicker__month-text--selected { background: var(--primary); color: var(--on-primary); }
-.finance-calendar .react-datepicker__day { border-radius: var(--radius-input); }
-.finance-calendar .react-datepicker__day--keyboard-selected, .finance-calendar .react-datepicker__month-text--keyboard-selected, .finance-calendar .react-datepicker__year-text--keyboard-selected { background: var(--primary-light); color: var(--primary-hover); }
-.finance-calendar .react-datepicker__year-text--selected { background: var(--primary); color: var(--on-primary); }
-.finance-calendar .react-datepicker__day--selected:not([aria-disabled="true"]):hover, .finance-calendar .react-datepicker__month-text--selected:not([aria-disabled="true"]):hover, .finance-calendar .react-datepicker__year-text--selected:not([aria-disabled="true"]):hover { background: var(--primary-hover); color: var(--on-primary); }
-.finance-calendar .react-datepicker__current-month, .finance-calendar .react-datepicker-year-header,
-.finance-calendar .react-datepicker__day-name, .finance-calendar .react-datepicker__day,
-.finance-calendar .react-datepicker__month-text, .finance-calendar .react-datepicker__year-text {
+.react-datepicker-wrapper {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.field-label>.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.calendar-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  padding: var(--space-2) var(--space-6) var(--space-2) var(--space-3);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-secondary);
+  line-height: 1.4;
+}
+
+.calendar-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+.finance-calendar-popper {
+  z-index: 80;
+}
+
+.finance-calendar.react-datepicker {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-raised);
+  padding: var(--space-2);
+}
+
+.finance-calendar .react-datepicker__header {
+  display: block;
+  padding: var(--space-3) 34px var(--space-2);
+  background: var(--primary-soft);
+  border-bottom-color: var(--border);
+  border-radius: var(--radius-input);
+}
+.finance-calendar .react-datepicker__navigation {
+  top: 18px;
+  width: 28px;
+  height: 28px;
+}
+.finance-calendar .react-datepicker__navigation--previous {
+  left: 8px;
+}
+.finance-calendar .react-datepicker__navigation--next {
+  right: 8px;
+}
+.finance-calendar .react-datepicker__current-month,
+.finance-calendar .react-datepicker-year-header {
+  margin: 0;
+  text-align: center;
+}
+.finance-calendar .react-datepicker__header__dropdown {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  margin: var(--space-2) 0;
+}
+.finance-calendar .react-datepicker__day-names {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  margin: 0;
+}
+.finance-calendar .react-datepicker__month-dropdown-container--select,
+.finance-calendar .react-datepicker__year-dropdown-container--select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.finance-calendar .react-datepicker__current-month,
+.finance-calendar .react-datepicker-year-header {
+  color: var(--text-primary);
+  font-size: var(--font-size-secondary);
+  font-weight: var(--font-weight-bold);
+}
+
+.finance-calendar .react-datepicker__day-name {
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+}
+
+.finance-calendar .react-datepicker__month-select,
+.finance-calendar .react-datepicker__year-select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  height: 36px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  color: var(--text-primary);
+  background: var(--surface);
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+}
+
+.finance-calendar .react-datepicker__day--selected,
+.finance-calendar .react-datepicker__day--in-selecting-range,
+.finance-calendar .react-datepicker__day--in-range,
+.finance-calendar .react-datepicker__month-text--selected,
+.finance-calendar .react-datepicker__month-text--in-selecting-range,
+.finance-calendar .react-datepicker__month-text--in-range,
+.finance-calendar .react-datepicker__year-text--selected,
+.finance-calendar .react-datepicker__year-text--in-selecting-range,
+.finance-calendar .react-datepicker__year-text--in-range {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.finance-calendar .react-datepicker__day {
+  border-radius: var(--radius-input);
+}
+
+.finance-calendar .react-datepicker__month-container {
+  float: none;
+  width: 100%;
+}
+
+.finance-calendar .react-datepicker__month {
+  margin: var(--space-2) 0 0;
+}
+
+.finance-calendar .react-datepicker__week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.finance-calendar .react-datepicker__day-name,
+.finance-calendar .react-datepicker__day {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+.finance-calendar .react-datepicker__day--keyboard-selected,
+.finance-calendar .react-datepicker__month-text--keyboard-selected,
+.finance-calendar .react-datepicker__year-text--keyboard-selected {
+  background: var(--primary-light);
+  color: var(--primary-hover);
+}
+
+.finance-calendar .react-datepicker__year-text--selected {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.finance-calendar .react-datepicker__day--selected:not([aria-disabled="true"]):hover,
+.finance-calendar .react-datepicker__month-text--selected:not([aria-disabled="true"]):hover,
+.finance-calendar .react-datepicker__year-text--selected:not([aria-disabled="true"]):hover {
+  background: var(--primary-hover);
+  color: var(--on-primary);
+}
+
+.finance-calendar .react-datepicker__current-month,
+.finance-calendar .react-datepicker-year-header,
+.finance-calendar .react-datepicker__day,
+.finance-calendar .react-datepicker__month-text,
+.finance-calendar .react-datepicker__year-text {
   color: var(--text-primary);
 }
+
 .finance-calendar .react-datepicker__day:not([aria-disabled="true"]):hover,
 .finance-calendar .react-datepicker__month-text:not([aria-disabled="true"]):hover,
 .finance-calendar .react-datepicker__year-text:not([aria-disabled="true"]):hover {
   background: var(--primary-light);
   color: var(--primary-hover);
 }
+
 .finance-calendar [aria-selected="true"],
 .finance-calendar [aria-selected="true"]:not([aria-disabled="true"]):hover {
   background: var(--primary);
   color: var(--on-primary);
 }
+
 .finance-calendar .react-datepicker__day--outside-month,
 .finance-calendar [aria-disabled="true"] {
   color: var(--text-secondary);
 }
-.finance-calendar [aria-disabled="true"] { opacity: .55; }
-.finance-calendar .react-datepicker__navigation-icon::before { border-color: var(--text-secondary); }
-.finance-calendar .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before { border-color: var(--primary); }
-.finance-calendar .react-datepicker__month-dropdown, .finance-calendar .react-datepicker__year-dropdown,
+
+.finance-calendar [aria-disabled="true"] {
+  opacity: .55;
+}
+
+.finance-calendar .react-datepicker__navigation-icon::before {
+  border-color: var(--text-secondary);
+}
+
+.finance-calendar .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: var(--primary);
+}
+
+.finance-calendar .react-datepicker__month-dropdown,
+.finance-calendar .react-datepicker__year-dropdown,
 .finance-calendar .react-datepicker__month-year-dropdown {
   color: var(--text-primary);
   background: var(--surface);
   border-color: var(--border);
 }
-.finance-calendar .react-datepicker__month-option:hover, .finance-calendar .react-datepicker__year-option:hover,
-.finance-calendar .react-datepicker__month-year-option:hover { background: var(--primary-light); }
-.finance-calendar-popper .react-datepicker__triangle { fill: var(--surface); stroke: var(--border); color: var(--surface); }
-.react-datepicker__portal { background: var(--overlay); }
-.react-datepicker__close-icon::after { background: var(--primary); color: var(--on-primary); }
-.finance-month-calendar { width: 292px; max-width: calc(100vw - 28px); padding: var(--space-3); }
-.finance-month-calendar .react-datepicker__month-container { width: 100%; }
-.finance-month-calendar .react-datepicker__header { padding: var(--space-3) var(--space-8); margin-bottom: var(--space-3); }
-.finance-month-calendar .react-datepicker__navigation { top: 20px; }
-.finance-month-calendar .react-datepicker__navigation--previous { left: 18px; }
-.finance-month-calendar .react-datepicker__navigation--next { right: 18px; }
-.finance-month-calendar .react-datepicker__month { display: grid; gap: var(--space-2); margin: 0; }
-.finance-month-calendar .react-datepicker__month-wrapper { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
-.finance-month-calendar .react-datepicker__month .react-datepicker__month-text { display: grid; place-items: center; width: auto; min-height: 44px; margin: 0; padding: var(--space-2) var(--space-1); border-radius: var(--radius-input); font-size: var(--font-size-secondary); line-height: 1.4; }
-.date-filter .react-datepicker-wrapper { flex: 1; width: 145px; }
-.date-filter .react-datepicker-wrapper input { width: 100%; }
-.dashboard-month-picker .react-datepicker-wrapper { width: 170px; }
-.custom-date-range .react-datepicker-wrapper { width: 160px; }
+
+.finance-calendar .react-datepicker__month-option:hover,
+.finance-calendar .react-datepicker__year-option:hover,
+.finance-calendar .react-datepicker__month-year-option:hover {
+  background: var(--primary-light);
+}
+
+.finance-calendar-popper .react-datepicker__triangle {
+  fill: var(--surface);
+  stroke: var(--border);
+  color: var(--surface);
+}
+
+.react-datepicker__portal {
+  background: var(--overlay);
+}
+
+.react-datepicker__close-icon::after {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.finance-month-calendar {
+  width: 292px;
+  max-width: calc(100vw - 28px);
+  padding: var(--space-3);
+}
+
+.finance-month-calendar .react-datepicker__month-container {
+  width: 100%;
+}
+
+.finance-month-calendar .react-datepicker__header {
+  padding: var(--space-3) var(--space-8);
+  margin-bottom: var(--space-3);
+}
+
+.finance-month-calendar .react-datepicker__navigation {
+  top: 20px;
+}
+
+.finance-month-calendar .react-datepicker__navigation--previous {
+  left: 18px;
+}
+
+.finance-month-calendar .react-datepicker__navigation--next {
+  right: 18px;
+}
+
+.finance-month-calendar .react-datepicker__month {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.finance-month-calendar .react-datepicker__month-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.finance-month-calendar .react-datepicker__month .react-datepicker__month-text {
+  display: grid;
+  place-items: center;
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: var(--space-2) var(--space-1);
+  border-radius: var(--radius-input);
+  font-size: var(--font-size-secondary);
+  line-height: 1.4;
+}
+
+.date-range-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  flex: 0 1 300px;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.date-range-field {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-1);
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
+}
+
+.date-range-field .react-datepicker-wrapper {
+  width: 100%;
+  min-width: 0;
+}
+
+.date-range-field .calendar-input {
+  width: 100%;
+  min-height: 36px;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-caption);
+}
+
+.dashboard-month-picker .react-datepicker-wrapper {
+  width: 170px;
+}
+
+.custom-date-range .react-datepicker-wrapper {
+  width: 160px;
+}
+
+.custom-date-range .calendar-input {
+  width: 100%;
+}
+
 @media (max-width: 640px) {
-  .date-filter .react-datepicker-wrapper { width: 110px; }
-  .dashboard-month-picker .react-datepicker-wrapper { flex: 1; }
+  .date-range-filters {
+    flex: 1 1 100%;
+  }
+
+  .dashboard-month-picker .react-datepicker-wrapper {
+    flex: 1;
+  }
 }

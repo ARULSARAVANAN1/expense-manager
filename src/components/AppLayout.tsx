@@ -10,6 +10,7 @@ function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState(() => new Date());
   const sidebarRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const profileRef = useRef<HTMLDetailsElement>(null);
@@ -25,7 +26,16 @@ function AppLayout() {
     : location.pathname.startsWith("/app/shared") ? "Shared expenses" : "Dashboard";
   const pageIcon = location.pathname.split("/")[2] ?? "dashboard";
   const initial = user?.name?.slice(0, 1).toUpperCase() || "U";
-  const dateLabel = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date());
+  const dateLabel = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(currentDate);
+  const weekdayLabel = new Intl.DateTimeFormat("en-IN", { weekday: "long" }).format(currentDate);
+  const dateValue = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
+
+  useEffect(() => {
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const timer = window.setTimeout(() => setCurrentDate(new Date()), midnight.getTime() - now.getTime());
+    return () => window.clearTimeout(timer);
+  }, [currentDate]);
 
   useEffect(() => {
     function dismissProfile(event: PointerEvent) {
@@ -114,7 +124,6 @@ function AppLayout() {
           <NavLink to="/app/budgets" onClick={() => setMenuOpen(false)}><Icon name="budget" />Budgets</NavLink>
           <NavLink to="/app/recurring" onClick={() => setMenuOpen(false)}><Icon name="recurring" />Recurring expenses</NavLink>
           <NavLink to="/app/shared" onClick={() => setMenuOpen(false)}><Icon name="transactions" />Shared expenses</NavLink>
-          <NavLink to="/app/profile" onClick={() => setMenuOpen(false)}><Icon name="profile" />Your profile</NavLink>
         </nav>
         </div>
         <div className="sidebar-bottom">
@@ -127,7 +136,10 @@ function AppLayout() {
         <header className="topbar">
           <div className="topbar-heading"><span className="topbar-page-icon" data-page={pageIcon}><Icon name={pageIcon === "shared" ? "transactions" : pageIcon === "accounts" ? "wallet" : pageIcon === "expenses" ? "expense" : pageIcon === "budgets" ? "budget" : pageIcon} size={21} /></span><h1>{pageTitle}</h1></div>
           <div className="topbar-actions">
-            <span className="topbar-date"><Icon name="clock" size={16} />{dateLabel}</span>
+            <time className="topbar-date" dateTime={dateValue} aria-label={`Today, ${weekdayLabel}, ${dateLabel}`}>
+              <span className="topbar-date-icon"><Icon name="clock" size={20} /></span>
+              <span className="topbar-date-copy"><span>{weekdayLabel}</span><strong>{dateLabel}</strong></span>
+            </time>
             <Link className="topbar-add" to="/app/expenses/new" aria-label="Add expense"><Icon name="plus" size={18} /><span>Add expense</span></Link>
             <details className="topbar-account" ref={profileRef} onBlur={(event) => {
               if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false;
@@ -135,7 +147,7 @@ function AppLayout() {
               <summary className="topbar-profile" aria-label="Account options">
                 <span className="profile-avatar small" aria-hidden="true">{initial}</span>
                 <span>{user?.name ?? "Your account"}</span>
-                <span className="profile-dropdown-chevron"><Icon name="next" size={14} /></span>
+                <span className="profile-menu-icon"><Icon name="profile" size={18} /></span>
               </summary>
               <div className="profile-dropdown">
                 <div className="profile-dropdown-identity"><strong>{user?.name ?? "Your account"}</strong><span>{user?.email}</span></div>

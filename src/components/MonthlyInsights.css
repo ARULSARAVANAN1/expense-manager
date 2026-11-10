@@ -38,6 +38,13 @@
 .quick-expense { margin-bottom: var(--space-6); }
 .quick-expense-controls { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0; }
 .quick-expense-controls input { flex: 1 1 220px; min-width: 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-card); color: var(--text); background: var(--surface); font-family: var(--font-family); font-size: var(--font-size-secondary); font-weight: var(--font-weight-regular); line-height: 1.5; }
+.quick-expense-controls input::placeholder { font-size: var(--font-size-caption); }
+.quick-expense-suggestions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.quick-expense-suggestions > span { color: var(--muted); font-size: var(--font-size-caption); }
+.quick-expense-suggestion { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3); border: 0; border-radius: var(--radius-badge); color: var(--text); background: var(--surface-muted); font: inherit; font-size: var(--font-size-caption); cursor: pointer; transition: background-color .18s ease, transform .18s ease; }
+.quick-expense-suggestion:hover { background: var(--primary-soft); transform: translateY(-1px); }
+.quick-expense-suggestion .ui-icon { color: var(--primary); }
+.quick-expense-suggestion small { color: var(--muted); font-size: inherit; font-variant-numeric: tabular-nums; }
 @media (max-width: 1150px) { .insight-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 640px) {
   .simulator-layout { grid-template-columns: minmax(0, 1fr); }

@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Area,
@@ -29,6 +29,20 @@ interface ChartProps {
 
 function monthKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function usePrefersReducedMotion() {
+  const [reducedMotion, setReducedMotion] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setReducedMotion(preference.matches);
+    updatePreference();
+    preference.addEventListener("change", updatePreference);
+    return () => preference.removeEventListener("change", updatePreference);
+  }, []);
+
+  return reducedMotion;
 }
 
 function recentMonths() {
@@ -98,6 +112,7 @@ export function ExpenseTrendChart({ expenses, onSelect }: ChartProps) {
 export function DailyExpenseChart({ expenses, month, onSelect }: { expenses: Expense[]; month: string; onSelect?: (date: string) => void }) {
   const navigate = useNavigate();
   const gradientId = useId();
+  const reducedMotion = usePrefersReducedMotion();
   const [year, monthNumber] = month.split("-").map(Number);
   const days = new Date(year, monthNumber, 0).getDate();
   const totals = new Map<string, number>();
@@ -129,6 +144,7 @@ export function DailyExpenseChart({ expenses, month, onSelect }: { expenses: Exp
         <Tooltip content={FinanceTooltip} cursor={{ stroke: "var(--primary-border)", strokeDasharray: "4 4" }} />
         <Area type="monotone" dataKey="amount" name="Expenses" stroke="var(--primary)" strokeWidth={3}
           fill={`url(#${gradientId})`} dot={false}
+          isAnimationActive={!reducedMotion} animationDuration={550} animationEasing="ease-out"
           activeDot={{ r: 6, fill: "var(--primary)", stroke: "var(--surface)", strokeWidth: 3 }} cursor="pointer" />
       </AreaChart>
     </ResponsiveContainer>
@@ -137,6 +153,7 @@ export function DailyExpenseChart({ expenses, month, onSelect }: { expenses: Exp
 
 export function CategoryDonutChart({ expenses, categories = expenseCategories, onSelect }: ChartProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
   const amounts = categories.map((category) => ({
     ...category,
     amount: expenses.filter((expense) => expense.categoryId === category.id).reduce((sum, expense) => sum + expense.amount, 0),
@@ -155,6 +172,7 @@ export function CategoryDonutChart({ expenses, categories = expenseCategories, o
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie data={amounts} dataKey="amount" nameKey="name" innerRadius="67%" outerRadius="88%" paddingAngle={3} stroke="none"
+              isAnimationActive={!reducedMotion} animationDuration={550} animationEasing="ease-out"
               onMouseEnter={(_, index) => setActiveId(amounts[index]?.id ?? null)}
               onMouseLeave={() => setActiveId(null)}
               onClick={(_, index) => { const category = amounts[index]; if (category) onSelect?.(category.id); }}>

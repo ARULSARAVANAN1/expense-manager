@@ -124,7 +124,10 @@ function IncomePage() {
         <div className="filter-toolbar">
           <label className="search-field"><Icon name="search" /><input aria-label="Search income" placeholder="Search income..." value={query} onChange={(event) => setQuery(event.target.value)} /></label>
           <select className="select-control" aria-label="Filter income by category" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}><option value="">All income categories</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select>
-          <div className="date-filter"><DatePicker aria-label="Start date" type="date" value={from} onChange={(value) => setFrom(value)} /><span>–</span><DatePicker aria-label="End date" type="date" value={to} onChange={(value) => setTo(value)} /></div>
+          <div className="date-range-filters">
+            <label className="date-range-field"><span>From</span><DatePicker aria-label="Start date" type="date" value={from} onChange={(value) => setFrom(value)} /></label>
+            <label className="date-range-field"><span>To</span><DatePicker aria-label="End date" type="date" value={to} onChange={(value) => setTo(value)} /></label>
+          </div>
           <button className="reset-button" type="button" onClick={() => { setQuery(""); setCategoryFilter(""); setFrom(""); setTo(""); }}>Reset</button>
         </div>
         {filtered.length ? <div className="table-scroll"><table className="data-table income-table"><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Account</th><th className="align-right">Amount</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{filtered.map((income) => {
